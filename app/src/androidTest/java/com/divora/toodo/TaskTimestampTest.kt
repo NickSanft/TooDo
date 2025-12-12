@@ -1,7 +1,7 @@
 package com.divora.toodo
 
 import android.content.Context
-import android.content.Intent
+import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -11,6 +11,7 @@ import androidx.test.uiautomator.Until
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.test.core.app.ActivityScenario
 
 @RunWith(AndroidJUnit4::class)
 class TaskTimestampTest {
@@ -18,6 +19,7 @@ class TaskTimestampTest {
     private lateinit var device: UiDevice
     private val packageName = ApplicationProvider.getApplicationContext<Context>().packageName
     private val LAUNCH_TIMEOUT = 5000L
+    private lateinit var taskViewModel: TaskViewModel
 
     @Before
     fun startMainActivityFromHomeScreen() {
@@ -36,10 +38,12 @@ class TaskTimestampTest {
         val sharedPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         sharedPrefs.edit().clear().apply()
 
-        // Launch the app
-        val intent = context.packageManager.getLaunchIntentForPackage(packageName)
-        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)    // Clear out any previous instances
-        context.startActivity(intent)
+        // Launch the activity and initialize the ViewModel
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
+        scenario.onActivity {
+            taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
+            taskViewModel.deleteAll()
+        }
 
         // Wait for the app to appear
         device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT)

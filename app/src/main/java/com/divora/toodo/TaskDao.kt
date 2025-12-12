@@ -21,6 +21,9 @@ interface TaskDao {
     @Delete
     suspend fun delete(task: Task)
 
+    @Query("DELETE FROM tasks")
+    suspend fun deleteAll()
+
     @Query("SELECT SUM(points) FROM tasks WHERE isCompleted = 1")
     fun getTotalPoints(): LiveData<Int>
 }

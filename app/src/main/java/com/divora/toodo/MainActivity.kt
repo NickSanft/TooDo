@@ -10,8 +10,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.divora.toodo.databinding.ActivityMainBinding
+import com.google.android.material.tabs.TabLayoutMediator
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,21 +26,18 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        val adapter = TaskListAdapter(
-            { task, isChecked -> taskViewModel.update(task.copy(isCompleted = isChecked)) },
-            { task -> showDeleteConfirmationDialog(task) }
-        )
-        binding.root.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.task_list).adapter = adapter
-        binding.root.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.task_list).layoutManager = LinearLayoutManager(this)
+        val viewPager = binding.root.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.view_pager)
+        viewPager.adapter = ViewPagerAdapter(this)
+
+        val tabLayout = binding.root.findViewById<com.google.android.material.tabs.TabLayout>(R.id.tab_layout)
+        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+            tab.text = when (position) {
+                0 -> "Active"
+                else -> "Completed"
+            }
+        }.attach()
 
         taskViewModel = ViewModelProvider(this).get(TaskViewModel::class.java)
-        taskViewModel.allTasks.observe(this) {
-            tasks -> tasks?.let { adapter.submitList(it) }
-        }
-
-        taskViewModel.totalPoints.observe(this) {
-            points -> binding.root.findViewById<android.widget.TextView>(R.id.total_points_text).text = "Total Points: ${points ?: 0}"
-        }
 
         binding.fab.setOnClickListener { 
             showAddTaskDialog()
@@ -72,12 +69,23 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showDeleteConfirmationDialog(task: Task) {
+    fun showDeleteConfirmationDialog(task: Task) {
         AlertDialog.Builder(this)
             .setTitle("Delete Task")
             .setMessage("Are you sure you want to delete this task?")
             .setPositiveButton("Delete") { _, _ ->
                 taskViewModel.delete(task)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    fun showUncheckConfirmationDialog(task: Task) {
+        AlertDialog.Builder(this)
+            .setTitle("Uncheck Task")
+            .setMessage("Are you sure you want to uncheck this task? This will reduce your total points.")
+            .setPositiveButton("Uncheck") { _, _ ->
+                taskViewModel.update(task.copy(isCompleted = false))
             }
             .setNegativeButton("Cancel", null)
             .show()

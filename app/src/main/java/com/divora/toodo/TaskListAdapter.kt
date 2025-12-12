@@ -9,6 +9,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class TaskListAdapter(
     private val onTaskCheckedChanged: (Task, Boolean) -> Unit,
@@ -29,12 +32,23 @@ class TaskListAdapter(
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val taskTitleView: TextView = itemView.findViewById(R.id.task_title)
         private val taskPointsView: TextView = itemView.findViewById(R.id.task_points)
+        private val taskCompletedAtView: TextView = itemView.findViewById(R.id.task_completed_at)
         private val checkBox: CheckBox = itemView.findViewById(R.id.checkBox)
         private val deleteButton: ImageButton = itemView.findViewById(R.id.delete_button)
 
         fun bind(task: Task, onTaskCheckedChanged: (Task, Boolean) -> Unit, onTaskDeleteClicked: (Task) -> Unit) {
             taskTitleView.text = task.title
             taskPointsView.text = "${task.points} points"
+            checkBox.contentDescription = "Complete task: ${task.title}"
+            deleteButton.contentDescription = "Delete task: ${task.title}"
+
+            if (task.isCompleted && task.completedAt != null) {
+                taskCompletedAtView.visibility = View.VISIBLE
+                val sdf = SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.getDefault())
+                taskCompletedAtView.text = "Completed at: ${sdf.format(Date(task.completedAt))}"
+            } else {
+                taskCompletedAtView.visibility = View.GONE
+            }
 
             // Remove the listener before setting the checked state to prevent unwanted triggers.
             checkBox.setOnCheckedChangeListener(null)

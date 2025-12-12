@@ -65,8 +65,7 @@ class TaskCompletionAndUncompletionTest {
         assert(taskAppeared)
 
         // Find the list item and click the checkbox within it.
-        val taskListItem = device.findObject(By.hasChild(By.text("Complete me")))
-        taskListItem.findObject(By.res(packageName, "checkBox")).click()
+        device.findObject(By.desc("Complete task: Complete me")).click()
 
         // After the click, the task should disappear from the active tab
         val taskDisappeared = device.wait(Until.gone(By.text("Complete me")), LAUNCH_TIMEOUT)
@@ -89,14 +88,13 @@ class TaskCompletionAndUncompletionTest {
         device.findObject(By.res(packageName, "medium_button")).click()
         device.findObject(By.text("Add")).click()
         device.wait(Until.hasObject(By.text("Uncheck me")), LAUNCH_TIMEOUT)
-        device.findObject(By.hasChild(By.text("Uncheck me"))).findObject(By.res(packageName, "checkBox")).click()
+        device.findObject(By.desc("Complete task: Uncheck me")).click()
         device.wait(Until.gone(By.text("Uncheck me")), LAUNCH_TIMEOUT)
         device.findObject(By.text("Completed")).click()
         device.wait(Until.hasObject(By.text("Uncheck me")), LAUNCH_TIMEOUT)
 
         // Click the checkbox to uncheck the task
-        val taskListItem = device.findObject(By.hasChild(By.text("Uncheck me")))
-        taskListItem.findObject(By.res(packageName, "checkBox")).click()
+        device.findObject(By.desc("Complete task: Uncheck me")).click()
 
         // Verify the confirmation dialog is shown
         val confirmationDialogAppeared = device.wait(Until.hasObject(By.text("Uncheck Task")), LAUNCH_TIMEOUT)
@@ -129,14 +127,13 @@ class TaskCompletionAndUncompletionTest {
         device.findObject(By.res(packageName, "medium_button")).click()
         device.findObject(By.text("Add")).click()
         device.wait(Until.hasObject(By.text("No reprompt")), LAUNCH_TIMEOUT)
-        device.findObject(By.hasChild(By.text("No reprompt"))).findObject(By.res(packageName, "checkBox")).click()
+        device.findObject(By.desc("Complete task: No reprompt")).click()
         device.wait(Until.gone(By.text("No reprompt")), LAUNCH_TIMEOUT)
         device.findObject(By.text("Completed")).click()
         device.wait(Until.hasObject(By.text("No reprompt")), LAUNCH_TIMEOUT)
 
         // Click the checkbox to uncheck the task
-        val taskListItem = device.findObject(By.hasChild(By.text("No reprompt")))
-        taskListItem.findObject(By.res(packageName, "checkBox")).click()
+        device.findObject(By.desc("Complete task: No reprompt")).click()
 
         // Verify the confirmation dialog is shown
         val confirmationDialogAppeared = device.wait(Until.hasObject(By.text("Uncheck Task")), LAUNCH_TIMEOUT)

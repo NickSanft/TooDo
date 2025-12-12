@@ -41,8 +41,8 @@ class SettingsTest {
         intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)    // Clear out any previous instances
         context.startActivity(intent)
 
-        // Wait for the app to appear
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT)
+        // Wait for the app to appear and the overflow menu to be present.
+        device.wait(Until.hasObject(By.desc("More options")), LAUNCH_TIMEOUT)
     }
 
     @Test
@@ -67,8 +67,7 @@ class SettingsTest {
         device.wait(Until.hasObject(By.text("No confirm task")), LAUNCH_TIMEOUT)
 
         // Delete the task and verify no confirmation dialog appears
-        val taskListItem = device.findObject(By.hasChild(By.text("No confirm task")))
-        taskListItem.findObject(By.res(packageName, "delete_button")).click()
+        device.findObject(By.desc("Delete task: No confirm task")).click()
 
         // Verify the task is gone
         val taskDisappeared = device.wait(Until.gone(By.text("No confirm task")), LAUNCH_TIMEOUT)
@@ -91,6 +90,8 @@ class SettingsTest {
 
         // Go back and reopen settings
         device.pressBack()
+        device.wait(Until.hasObject(By.text("Active")), LAUNCH_TIMEOUT)
+        device.wait(Until.hasObject(By.desc("More options")), LAUNCH_TIMEOUT)
         device.findObject(By.desc("More options")).click()
         device.wait(Until.hasObject(By.text("Settings")), LAUNCH_TIMEOUT)
         device.findObject(By.text("Settings")).click()
@@ -102,6 +103,8 @@ class SettingsTest {
         // Change back to light theme
         device.findObject(By.res(packageName, "light_theme_button")).click()
         device.pressBack()
+        device.wait(Until.hasObject(By.text("Active")), LAUNCH_TIMEOUT)
+        device.wait(Until.hasObject(By.desc("More options")), LAUNCH_TIMEOUT)
         device.findObject(By.desc("More options")).click()
         device.wait(Until.hasObject(By.text("Settings")), LAUNCH_TIMEOUT)
         device.findObject(By.text("Settings")).click()

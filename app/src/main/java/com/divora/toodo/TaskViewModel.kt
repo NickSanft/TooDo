@@ -25,7 +25,12 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun update(task: Task) = viewModelScope.launch {
-        repository.update(task)
+        val taskWithTimestamp = if (task.isCompleted) {
+            task.copy(completedAt = System.currentTimeMillis())
+        } else {
+            task.copy(completedAt = null)
+        }
+        repository.update(taskWithTimestamp)
     }
 
     fun delete(task: Task) = viewModelScope.launch {

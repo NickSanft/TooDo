@@ -10,5 +10,6 @@ data class Task(
     val title: String,
     val difficulty: String,
     val points: Int,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val completedAt: Long? = null
 )

@@ -42,7 +42,14 @@ class TaskListFragment : Fragment() {
 
         taskViewModel = ViewModelProvider(requireActivity()).get(TaskViewModel::class.java)
         taskViewModel.allTasks.observe(viewLifecycleOwner) { tasks ->
-            tasks?.let { adapter.submitList(it.filter { it.isCompleted == isCompleted }) }
+            tasks?.let {
+                val filteredTasks = it.filter { it.isCompleted == isCompleted }
+                if (isCompleted) {
+                    adapter.submitList(filteredTasks.sortedByDescending { it.completedAt })
+                } else {
+                    adapter.submitList(filteredTasks)
+                }
+            }
         }
 
         taskViewModel.totalPoints.observe(viewLifecycleOwner) {

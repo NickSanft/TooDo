@@ -1,4 +1,3 @@
-
 package com.divora.toodo
 
 import android.content.Context
@@ -14,7 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class TaskCreationAndCompletionTest {
+class TaskTimestampTest {
 
     private lateinit var device: UiDevice
     private val packageName = ApplicationProvider.getApplicationContext<Context>().packageName
@@ -47,36 +46,45 @@ class TaskCreationAndCompletionTest {
     }
 
     @Test
-    fun createTaskAndCompleteIt() {
-        // Click on the FAB to open the add task dialog
+    fun testTimestampAndSorting() {
+        // Create first task
         device.findObject(By.res(packageName, "fab")).click()
-
-        // Wait for the dialog to appear
         device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
-
-        // Type in the task title and select the difficulty
-        device.findObject(By.res(packageName, "task_title_input")).text = "Complete this task"
+        device.findObject(By.res(packageName, "task_title_input")).text = "First task"
         device.findObject(By.res(packageName, "medium_button")).click()
-
-        // Click on the "Add" button
         device.findObject(By.text("Add")).click()
+        device.wait(Until.hasObject(By.text("First task")), LAUNCH_TIMEOUT)
 
-        // Wait for the task to be displayed on the screen, confirming the dialog is gone.
-        val taskAppeared = device.wait(Until.hasObject(By.text("Complete this task")), LAUNCH_TIMEOUT)
-        assert(taskAppeared)
+        // Create second task
+        device.findObject(By.res(packageName, "fab")).click()
+        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
+        device.findObject(By.res(packageName, "task_title_input")).text = "Second task"
+        device.findObject(By.res(packageName, "medium_button")).click()
+        device.findObject(By.text("Add")).click()
+        device.wait(Until.hasObject(By.text("Second task")), LAUNCH_TIMEOUT)
 
-        // Find the list item and click the checkbox within it.
-        device.findObject(By.desc("Complete task: Complete this task")).click()
+        // Complete first task
+        device.findObject(By.desc("Complete task: First task")).click()
+        device.wait(Until.gone(By.text("First task")), LAUNCH_TIMEOUT)
 
-        // After the click, the task should disappear from the active tab
-        val taskDisappeared = device.wait(Until.gone(By.text("Complete this task")), LAUNCH_TIMEOUT)
-        assert(taskDisappeared)
+        // Add a delay to ensure the timestamps are different
+        Thread.sleep(1000)
 
-        // Switch to the "Completed" tab
+        // Complete second task
+        device.findObject(By.desc("Complete task: Second task")).click()
+        device.wait(Until.gone(By.text("Second task")), LAUNCH_TIMEOUT)
+
+        // Go to completed tab
         device.findObject(By.text("Completed")).click()
 
-        // The task should now be visible in the completed tab
-        val completedTaskAppeared = device.wait(Until.hasObject(By.text("Complete this task")), LAUNCH_TIMEOUT)
-        assert(completedTaskAppeared)
+        // Verify timestamp is visible for both tasks
+        device.wait(Until.hasObject(By.textContains("Completed at:")), LAUNCH_TIMEOUT)
+
+        // Verify that the second task (completed last) is displayed first
+        val taskList = device.findObject(By.res(packageName, "task_list"))
+        val tasks = taskList.children
+        assert(tasks.size >= 2)
+        assert(tasks[0].findObject(By.res(packageName, "task_title")).text == "Second task")
+        assert(tasks[1].findObject(By.res(packageName, "task_title")).text == "First task")
     }
 }

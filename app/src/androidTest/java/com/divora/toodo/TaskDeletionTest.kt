@@ -65,8 +65,7 @@ class TaskDeletionTest {
         assert(taskAppeared)
 
         // Find the list item and click the delete button within it.
-        val taskListItem = device.findObject(By.hasChild(By.text("Delete this active task")))
-        taskListItem.findObject(By.res(packageName, "delete_button")).click()
+        device.findObject(By.desc("Delete task: Delete this active task")).click()
 
         // Verify the confirmation dialog is shown
         val confirmationDialogAppeared = device.wait(Until.hasObject(By.text("Delete Task")), LAUNCH_TIMEOUT)
@@ -101,8 +100,7 @@ class TaskDeletionTest {
         assert(taskAppeared)
 
         // Find the list item and click the delete button within it.
-        val taskListItem = device.findObject(By.hasChild(By.text("Don't delete this active task")))
-        taskListItem.findObject(By.res(packageName, "delete_button")).click()
+        device.findObject(By.desc("Delete task: Don't delete this active task")).click()
 
         // Verify the confirmation dialog is shown
         val confirmationDialogAppeared = device.wait(Until.hasObject(By.text("Delete Task")), LAUNCH_TIMEOUT)
@@ -137,8 +135,7 @@ class TaskDeletionTest {
         assert(taskAppeared)
 
         // Find the list item and click the checkbox within it.
-        val taskListItem = device.findObject(By.hasChild(By.text("Delete this completed task")))
-        taskListItem.findObject(By.res(packageName, "checkBox")).click()
+        device.findObject(By.desc("Complete task: Delete this completed task")).click()
 
         // After the click, the task should disappear from the active tab
         val taskDisappeared = device.wait(Until.gone(By.text("Delete this completed task")), LAUNCH_TIMEOUT)
@@ -152,8 +149,7 @@ class TaskDeletionTest {
         assert(completedTaskAppeared)
 
         // Find the list item and click the delete button within it.
-        val completedTaskListItem = device.findObject(By.hasChild(By.text("Delete this completed task")))
-        completedTaskListItem.findObject(By.res(packageName, "delete_button")).click()
+        device.findObject(By.desc("Delete task: Delete this completed task")).click()
 
         // Verify the confirmation dialog is shown
         val confirmationDialogAppeared = device.wait(Until.hasObject(By.text("Delete Task")), LAUNCH_TIMEOUT)

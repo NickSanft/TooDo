@@ -1,0 +1,76 @@
+
+package com.divora.toodo
+
+import android.content.Context
+import android.content.Intent
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class TaskCreationAndCompletionTest {
+
+    private lateinit var device: UiDevice
+    private val packageName = ApplicationProvider.getApplicationContext<Context>().packageName
+    private val LAUNCH_TIMEOUT = 5000L
+
+    @Before
+    fun startMainActivityFromHomeScreen() {
+        // Initialize UiDevice instance
+        device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
+        // Start from the home screen
+        device.pressHome()
+
+        // Wait for launcher
+        val launcherPackage = device.launcherPackageName
+        device.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT)
+
+        // Launch the app
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)    // Clear out any previous instances
+        context.startActivity(intent)
+
+        // Wait for the app to appear
+        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT)
+    }
+
+    @Test
+    fun createTaskAndCompleteIt() {
+        // Click on the FAB to open the add task dialog
+        device.findObject(By.res(packageName, "fab")).click()
+
+        // Wait for the dialog to appear
+        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
+
+        // Type in the task title and select the difficulty
+        device.findObject(By.res(packageName, "task_title_input")).text = "My new task"
+        device.findObject(By.res(packageName, "medium_button")).click()
+
+        // Click on the "Add" button
+        device.findObject(By.text("Add")).click()
+
+        // Wait for the task to be displayed on the screen, confirming the dialog is gone.
+        val taskAppeared = device.wait(Until.hasObject(By.text("My new task")), LAUNCH_TIMEOUT)
+        assert(taskAppeared)
+
+        // Find the list item and click the checkbox within it.
+        val taskListItem = device.findObject(By.hasChild(By.text("My new task")))
+        taskListItem.findObject(By.res(packageName, "checkBox")).click()
+
+        // After the click, the UI re-renders, making the old object stale.
+        // We now wait for a new object to appear that matches the completed state.
+        val checkedItemSelector = By.hasChild(By.text("My new task"))
+            .hasChild(By.res(packageName, "checkBox").checked(true))
+        val itemIsChecked = device.wait(Until.hasObject(checkedItemSelector), LAUNCH_TIMEOUT)
+
+        assert(itemIsChecked)
+    }
+}

@@ -50,21 +50,30 @@ class PrizesFragment : Fragment() {
     }
 
     private fun showRedeemConfirmationDialog(prize: Prize) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Redeem Prize")
-            .setMessage("Are you sure you want to redeem \"${prize.name}\" for ${prize.cost} points?")
-            .setPositiveButton("Redeem") { _, _ ->
-                val redeemedTask = Task(
-                    title = "Redeemed: ${prize.name}",
-                    difficulty = "",
-                    points = -prize.cost,
-                    isCompleted = true,
-                    completedAt = System.currentTimeMillis()
-                )
-                taskViewModel.insert(redeemedTask)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        val currentPoints = taskViewModel.totalPoints.value ?: 0
+        if (currentPoints < prize.cost) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Not Enough Points")
+                .setMessage("You do not have enough points to redeem this prize.")
+                .setPositiveButton("OK", null)
+                .show()
+        } else {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Redeem Prize")
+                .setMessage("Are you sure you want to redeem \"${prize.name}\" for ${prize.cost} points?")
+                .setPositiveButton("Redeem") { _, _ ->
+                    val redeemedTask = Task(
+                        title = "Redeemed: ${prize.name}",
+                        difficulty = "",
+                        points = -prize.cost,
+                        isCompleted = true,
+                        completedAt = System.currentTimeMillis()
+                    )
+                    taskViewModel.insert(redeemedTask)
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
     }
 
     override fun onDestroyView() {

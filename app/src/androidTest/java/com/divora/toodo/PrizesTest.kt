@@ -74,4 +74,20 @@ class PrizesTest {
         device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
         device.wait(Until.hasObject(By.res(packageName, "total_points_text").text("Total Points: 0")), LAUNCH_TIMEOUT)
     }
+
+    @Test
+    fun testRedeemPrize_notEnoughPoints() {
+        // Switch to the "Prizes" tab
+        device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
+
+        // Attempt to redeem the "Ice Cream" prize (costs 10 points)
+        device.wait(Until.findObject(By.desc("Redeem prize: Ice Cream")), LAUNCH_TIMEOUT).click()
+
+        // Verify the "Not Enough Points" dialog is shown
+        device.wait(Until.hasObject(By.text("Not Enough Points")), LAUNCH_TIMEOUT)
+        device.wait(Until.findObject(By.text("OK")), LAUNCH_TIMEOUT).click()
+
+        // Verify the total points are still 0
+        device.wait(Until.hasObject(By.res(packageName, "total_points_text").text("Total Points: 0")), LAUNCH_TIMEOUT)
+    }
 }

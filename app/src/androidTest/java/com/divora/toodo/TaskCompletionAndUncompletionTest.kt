@@ -115,4 +115,48 @@ class TaskCompletionAndUncompletionTest {
         val activeTaskAppeared = device.wait(Until.hasObject(By.text("Uncheck me")), LAUNCH_TIMEOUT)
         assert(activeTaskAppeared)
     }
+
+    @Test
+    fun uncheckTaskAndMoveToActiveTab_DoesNotReprompt() {
+        // Create and complete a task
+        device.findObject(By.res(packageName, "fab")).click()
+        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
+        device.findObject(By.res(packageName, "task_title_input")).text = "No reprompt"
+        device.findObject(By.res(packageName, "medium_button")).click()
+        device.findObject(By.text("Add")).click()
+        device.wait(Until.hasObject(By.text("No reprompt")), LAUNCH_TIMEOUT)
+        device.findObject(By.hasChild(By.text("No reprompt"))).findObject(By.res(packageName, "checkBox")).click()
+        device.wait(Until.gone(By.text("No reprompt")), LAUNCH_TIMEOUT)
+        device.findObject(By.text("Completed")).click()
+        device.wait(Until.hasObject(By.text("No reprompt")), LAUNCH_TIMEOUT)
+
+        // Click the checkbox to uncheck the task
+        val taskListItem = device.findObject(By.hasChild(By.text("No reprompt")))
+        taskListItem.findObject(By.res(packageName, "checkBox")).click()
+
+        // Verify the confirmation dialog is shown
+        val confirmationDialogAppeared = device.wait(Until.hasObject(By.text("Uncheck Task")), LAUNCH_TIMEOUT)
+        assert(confirmationDialogAppeared)
+
+        // Click the "Uncheck" button in the confirmation dialog
+        device.findObject(By.text("Uncheck")).click()
+
+        // Wait for the dialog to disappear
+        device.wait(Until.gone(By.text("Uncheck Task")), LAUNCH_TIMEOUT)
+
+        // After the click, the task should disappear from the completed tab
+        val taskDisappeared = device.wait(Until.gone(By.text("No reprompt")), LAUNCH_TIMEOUT)
+        assert(taskDisappeared)
+
+        // Switch to the "Active" tab
+        device.findObject(By.text("Active")).click()
+
+        // The task should now be visible in the active tab
+        val activeTaskAppeared = device.wait(Until.hasObject(By.text("No reprompt")), LAUNCH_TIMEOUT)
+        assert(activeTaskAppeared)
+
+        // Verify that the confirmation dialog does not appear again
+        val confirmationDialogGone = device.wait(Until.gone(By.text("Uncheck Task")), LAUNCH_TIMEOUT)
+        assert(confirmationDialogGone)
+    }
 }

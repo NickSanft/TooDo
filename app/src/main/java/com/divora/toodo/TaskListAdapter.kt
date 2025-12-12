@@ -35,10 +35,16 @@ class TaskListAdapter(
         fun bind(task: Task, onTaskCheckedChanged: (Task, Boolean) -> Unit, onTaskDeleteClicked: (Task) -> Unit) {
             taskTitleView.text = task.title
             taskPointsView.text = "${task.points} points"
+
+            // Remove the listener before setting the checked state to prevent unwanted triggers.
+            checkBox.setOnCheckedChangeListener(null)
             checkBox.isChecked = task.isCompleted
+
+            // Re-add the listener for user interactions.
             checkBox.setOnCheckedChangeListener { _, isChecked ->
                 onTaskCheckedChanged(task, isChecked)
             }
+
             deleteButton.setOnClickListener {
                 onTaskDeleteClicked(task)
             }

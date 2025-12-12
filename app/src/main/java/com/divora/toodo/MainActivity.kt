@@ -3,14 +3,13 @@ package com.divora.toodo
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.EditText
-import android.widget.RadioGroup
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.viewpager2.widget.ViewPager2
 import com.divora.toodo.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -18,6 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var taskViewModel: TaskViewModel
+    private lateinit var viewPager: ViewPager2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,8 +27,9 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        val viewPager = binding.root.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.view_pager)
-        viewPager.adapter = ViewPagerAdapter(this)
+        viewPager = binding.root.findViewById<ViewPager2>(R.id.view_pager)
+        val adapter = ViewPagerAdapter(this)
+        viewPager.adapter = adapter
 
         val tabLayout = binding.root.findViewById<com.google.android.material.tabs.TabLayout>(R.id.tab_layout)
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
@@ -41,34 +42,23 @@ class MainActivity : AppCompatActivity() {
 
         taskViewModel = ViewModelProvider(this).get(TaskViewModel::class.java)
 
-        binding.fab.setOnClickListener { 
-            showAddTaskDialog()
-        }
-    }
-
-    private fun showAddTaskDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null)
-        val taskTitleInput = dialogView.findViewById<EditText>(R.id.task_title_input)
-
-        AlertDialog.Builder(this)
-            .setTitle("Add New Task")
-            .setView(dialogView)
-            .setPositiveButton("Add") { _, _ ->
-                val title = taskTitleInput.text.toString()
-                val difficulty = when (dialogView.findViewById<RadioGroup>(R.id.difficulty_radio_group).checkedRadioButtonId) {
-                    R.id.easy_button -> "Easy"
-                    R.id.medium_button -> "Medium"
-                    else -> "Hard"
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                binding.fab.visibility = when (position) {
+                    0 -> View.VISIBLE
+                    1 -> View.GONE
+                    else -> View.VISIBLE
                 }
-                val points = when (difficulty) {
-                    "Easy" -> 1
-                    "Medium" -> 2
-                    else -> 5
-                }
-                taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points))
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        })
+
+        binding.fab.setOnClickListener { 
+            val fragment = supportFragmentManager.findFragmentByTag("f" + viewPager.currentItem)
+            if (fragment is FabClickHandler) {
+                fragment.onFabClick()
+            }
+        }
     }
 
     fun showDeleteConfirmationDialog(task: Task) {

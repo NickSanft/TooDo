@@ -31,6 +31,8 @@ class PrizesTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val sharedPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         sharedPrefs.edit().clear().apply()
+        val prizesPrefs = context.getSharedPreferences("prizes", Context.MODE_PRIVATE)
+        prizesPrefs.edit().clear().apply()
 
         scenario = ActivityScenario.launch(MainActivity::class.java)
         scenario.onActivity {
@@ -42,6 +44,35 @@ class PrizesTest {
     @After
     fun tearDown() {
         scenario.close()
+    }
+
+    @Test
+    fun testAddCustomPrize() {
+        // Switch to the "Prizes" tab
+        device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
+
+        // Click the "Add Prize" button
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+
+        // Verify the "Add New Prize" dialog is shown
+        device.wait(Until.hasObject(By.text("Add New Prize")), LAUNCH_TIMEOUT)
+
+        // Add a new prize
+        device.wait(Until.findObject(By.res(packageName, "prize_name_input")), LAUNCH_TIMEOUT).text = "Custom Prize"
+        device.wait(Until.findObject(By.res(packageName, "prize_cost_input")), LAUNCH_TIMEOUT).text = "5"
+        device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
+
+        // Verify the new prize is displayed in the list
+        device.wait(Until.hasObject(By.text("Custom Prize")), LAUNCH_TIMEOUT)
+
+        // Restart the activity to verify the prize is saved
+        scenario.recreate()
+
+        // Switch to the "Prizes" tab
+        device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
+
+        // Verify the new prize is still displayed in the list
+        device.wait(Until.hasObject(By.text("Custom Prize")), LAUNCH_TIMEOUT)
     }
 
     @Test

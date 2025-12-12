@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,86 +18,77 @@ import androidx.test.core.app.ActivityScenario
 class TaskDeletionTest {
 
     private lateinit var device: UiDevice
+    private lateinit var scenario: ActivityScenario<MainActivity>
     private val packageName = ApplicationProvider.getApplicationContext<Context>().packageName
     private val LAUNCH_TIMEOUT = 5000L
-    private lateinit var taskViewModel: TaskViewModel
 
     @Before
-    fun startMainActivityFromHomeScreen() {
+    fun setUp() {
         // Initialize UiDevice instance
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
-        // Start from the home screen
-        device.pressHome()
-
-        // Wait for launcher
-        val launcherPackage = device.launcherPackageName
-        device.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT)
-
-        // Clear shared preferences
+        // Clear shared preferences and database before each test
         val context = ApplicationProvider.getApplicationContext<Context>()
         val sharedPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         sharedPrefs.edit().clear().apply()
 
-        // Launch the activity and initialize the ViewModel
-        val scenario = ActivityScenario.launch(MainActivity::class.java)
+        scenario = ActivityScenario.launch(MainActivity::class.java)
         scenario.onActivity {
-            taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
+            val taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
             taskViewModel.deleteAll()
         }
+    }
 
-        // Wait for the app to appear
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT)
+    @After
+    fun tearDown() {
+        scenario.close()
     }
 
     @Test
     fun testTaskDeletion() {
         // Create a task to delete from the active tab
-        device.findObject(By.res(packageName, "fab")).click()
-        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
-        device.findObject(By.res(packageName, "task_title_input")).text = "Delete this active task"
-        device.findObject(By.res(packageName, "medium_button")).click()
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Delete this active task"
+        device.findObject(By.text("Hard (5 points)")).click()
         device.findObject(By.text("Add")).click()
-        device.wait(Until.hasObject(By.text("Delete this active task")), LAUNCH_TIMEOUT)
+        device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
 
         // Delete the task and confirm
-        device.findObject(By.desc("Delete task: Delete this active task")).click()
-        device.wait(Until.hasObject(By.text("Delete Task")), LAUNCH_TIMEOUT)
-        device.findObject(By.text("Delete")).click()
+        val deleteButton1 = device.wait(Until.findObject(By.desc("Delete task: Delete this active task")), LAUNCH_TIMEOUT)
+        deleteButton1.click()
+        device.wait(Until.findObject(By.text("Delete")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("Delete this active task")), LAUNCH_TIMEOUT)
 
         // Create a task to cancel deletion from the active tab
-        device.findObject(By.res(packageName, "fab")).click()
-        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
-        device.findObject(By.res(packageName, "task_title_input")).text = "Don't delete this active task"
-        device.findObject(By.res(packageName, "medium_button")).click()
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Don't delete this active task"
+        device.findObject(By.text("Hard (5 points)")).click()
         device.findObject(By.text("Add")).click()
-        device.wait(Until.hasObject(By.text("Don't delete this active task")), LAUNCH_TIMEOUT)
+        device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
 
         // Attempt to delete and then cancel
-        device.findObject(By.desc("Delete task: Don't delete this active task")).click()
-        device.wait(Until.hasObject(By.text("Delete Task")), LAUNCH_TIMEOUT)
-        device.findObject(By.text("Cancel")).click()
+        val deleteButton2 = device.wait(Until.findObject(By.desc("Delete task: Don't delete this active task")), LAUNCH_TIMEOUT)
+        deleteButton2.click()
+        device.wait(Until.findObject(By.text("Cancel")), LAUNCH_TIMEOUT).click()
         device.wait(Until.hasObject(By.text("Don't delete this active task")), LAUNCH_TIMEOUT)
 
         // Create a task to delete from the completed tab
-        device.findObject(By.res(packageName, "fab")).click()
-        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
-        device.findObject(By.res(packageName, "task_title_input")).text = "Delete this completed task"
-        device.findObject(By.res(packageName, "medium_button")).click()
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Delete this completed task"
+        device.findObject(By.text("Hard (5 points)")).click()
         device.findObject(By.text("Add")).click()
-        device.wait(Until.hasObject(By.text("Delete this completed task")), LAUNCH_TIMEOUT)
+        device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
 
         // Complete the task
-        device.findObject(By.desc("Complete task: Delete this completed task")).click()
+        val completeCheckbox = device.wait(Until.findObject(By.desc("Complete task: Delete this completed task")), LAUNCH_TIMEOUT)
+        completeCheckbox.click()
         device.wait(Until.gone(By.text("Delete this completed task")), LAUNCH_TIMEOUT)
         device.findObject(By.text("Completed")).click()
-        device.wait(Until.hasObject(By.text("Delete this completed task")), LAUNCH_TIMEOUT)
 
         // Delete the task from the completed tab
-        device.findObject(By.desc("Delete task: Delete this completed task")).click()
-        device.wait(Until.hasObject(By.text("Delete Task")), LAUNCH_TIMEOUT)
-        device.findObject(By.text("Delete")).click()
+        val deleteButton3 = device.wait(Until.findObject(By.desc("Delete task: Delete this completed task")), LAUNCH_TIMEOUT)
+        deleteButton3.click()
+        device.wait(Until.findObject(By.text("Delete")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("Delete this completed task")), LAUNCH_TIMEOUT)
     }
 }

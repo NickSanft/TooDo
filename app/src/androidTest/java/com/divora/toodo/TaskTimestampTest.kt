@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,75 +18,69 @@ import androidx.test.core.app.ActivityScenario
 class TaskTimestampTest {
 
     private lateinit var device: UiDevice
+    private lateinit var scenario: ActivityScenario<MainActivity>
     private val packageName = ApplicationProvider.getApplicationContext<Context>().packageName
     private val LAUNCH_TIMEOUT = 5000L
-    private lateinit var taskViewModel: TaskViewModel
 
     @Before
-    fun startMainActivityFromHomeScreen() {
+    fun setUp() {
         // Initialize UiDevice instance
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
-        // Start from the home screen
-        device.pressHome()
-
-        // Wait for launcher
-        val launcherPackage = device.launcherPackageName
-        device.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT)
-
-        // Clear shared preferences
+        // Clear shared preferences and database before each test
         val context = ApplicationProvider.getApplicationContext<Context>()
         val sharedPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         sharedPrefs.edit().clear().apply()
 
-        // Launch the activity and initialize the ViewModel
-        val scenario = ActivityScenario.launch(MainActivity::class.java)
+        scenario = ActivityScenario.launch(MainActivity::class.java)
         scenario.onActivity {
-            taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
+            val taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
             taskViewModel.deleteAll()
         }
+    }
 
-        // Wait for the app to appear
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT)
+    @After
+    fun tearDown() {
+        scenario.close()
     }
 
     @Test
     fun testTimestampAndSorting() {
         // Create first task
-        device.findObject(By.res(packageName, "fab")).click()
-        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
-        device.findObject(By.res(packageName, "task_title_input")).text = "First task"
-        device.findObject(By.res(packageName, "medium_button")).click()
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "First task"
+        device.findObject(By.text("Hard (5 points)")).click()
         device.findObject(By.text("Add")).click()
-        device.wait(Until.hasObject(By.text("First task")), LAUNCH_TIMEOUT)
+        device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
+        Thread.sleep(1000) // Wait for recycler view to settle
 
         // Create second task
-        device.findObject(By.res(packageName, "fab")).click()
-        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
-        device.findObject(By.res(packageName, "task_title_input")).text = "Second task"
-        device.findObject(By.res(packageName, "medium_button")).click()
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Second task"
+        device.findObject(By.text("Hard (5 points)")).click()
         device.findObject(By.text("Add")).click()
-        device.wait(Until.hasObject(By.text("Second task")), LAUNCH_TIMEOUT)
+        device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
+        Thread.sleep(1000) // Wait for recycler view to settle
 
         // Complete first task
-        device.findObject(By.desc("Complete task: First task")).click()
+        val firstCheckbox = device.wait(Until.findObject(By.desc("Complete task: First task")), LAUNCH_TIMEOUT)
+        firstCheckbox.click()
         device.wait(Until.gone(By.text("First task")), LAUNCH_TIMEOUT)
 
         // Add a delay to ensure the timestamps are different
         Thread.sleep(1000)
 
         // Complete second task
-        device.findObject(By.desc("Complete task: Second task")).click()
+        val secondCheckbox = device.wait(Until.findObject(By.desc("Complete task: Second task")), LAUNCH_TIMEOUT)
+        secondCheckbox.click()
         device.wait(Until.gone(By.text("Second task")), LAUNCH_TIMEOUT)
 
-        // Go to completed tab
+        // Go to completed tab and wait for it to settle
         device.findObject(By.text("Completed")).click()
-
-        // Verify timestamp is visible for both tasks
-        device.wait(Until.hasObject(By.textContains("Completed at:")), LAUNCH_TIMEOUT)
+        Thread.sleep(1000)
 
         // Verify that the second task (completed last) is displayed first
-        val taskList = device.findObject(By.res(packageName, "task_list"))
+        val taskList = device.wait(Until.findObject(By.res(packageName, "task_list")), LAUNCH_TIMEOUT)
         val tasks = taskList.children
         assert(tasks.size >= 2)
         assert(tasks[0].findObject(By.res(packageName, "task_title")).text == "Second task")

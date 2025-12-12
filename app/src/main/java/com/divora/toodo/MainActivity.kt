@@ -34,7 +34,8 @@ class MainActivity : AppCompatActivity() {
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when (position) {
                 0 -> "Active"
-                else -> "Completed"
+                1 -> "Completed"
+                else -> "Prizes"
             }
         }.attach()
 

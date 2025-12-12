@@ -1,5 +1,7 @@
 package com.divora.toodo
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -8,7 +10,6 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import com.divora.toodo.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
@@ -70,6 +71,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun showDeleteConfirmationDialog(task: Task) {
+        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("disable_confirmations", false)) {
+            taskViewModel.delete(task)
+            return
+        }
+
         AlertDialog.Builder(this)
             .setTitle("Delete Task")
             .setMessage("Are you sure you want to delete this task?")
@@ -81,6 +88,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun showUncheckConfirmationDialog(task: Task) {
+        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("disable_confirmations", false)) {
+            taskViewModel.update(task.copy(isCompleted = false))
+            return
+        }
+
         AlertDialog.Builder(this)
             .setTitle("Uncheck Task")
             .setMessage("Are you sure you want to uncheck this task? This will reduce your total points.")
@@ -98,12 +111,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_light_theme -> {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                true
-            }
-            R.id.action_dark_theme -> {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            R.id.action_settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
                 true
             }
             else -> super.onOptionsItemSelected(item)

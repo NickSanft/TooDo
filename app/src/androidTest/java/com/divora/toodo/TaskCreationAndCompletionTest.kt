@@ -32,8 +32,12 @@ class TaskCreationAndCompletionTest {
         val launcherPackage = device.launcherPackageName
         device.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT)
 
-        // Launch the app
+        // Clear shared preferences
         val context = ApplicationProvider.getApplicationContext<Context>()
+        val sharedPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        sharedPrefs.edit().clear().apply()
+
+        // Launch the app
         val intent = context.packageManager.getLaunchIntentForPackage(packageName)
         intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)    // Clear out any previous instances
         context.startActivity(intent)

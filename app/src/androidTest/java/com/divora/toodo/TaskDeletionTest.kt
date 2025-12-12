@@ -64,9 +64,52 @@ class TaskDeletionTest {
         val taskListItem = device.findObject(By.hasChild(By.text("Delete this task")))
         taskListItem.findObject(By.res(packageName, "delete_button")).click()
 
+        // Verify the confirmation dialog is shown
+        val confirmationDialogAppeared = device.wait(Until.hasObject(By.text("Delete Task")), LAUNCH_TIMEOUT)
+        assert(confirmationDialogAppeared)
+
+        // Click the "Delete" button in the confirmation dialog
+        device.findObject(By.text("Delete")).click()
+
         // After the click, the UI re-renders. We now wait for the task to disappear
         val taskDisappeared = device.wait(Until.gone(By.text("Delete this task")), LAUNCH_TIMEOUT)
 
         assert(taskDisappeared)
+    }
+
+    @Test
+    fun createTaskAndCancelDeletion() {
+        // Click on the FAB to open the add task dialog
+        device.findObject(By.res(packageName, "fab")).click()
+
+        // Wait for the dialog to appear
+        device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
+
+        // Type in the task title and select the difficulty
+        device.findObject(By.res(packageName, "task_title_input")).text = "Don't delete this task"
+        device.findObject(By.res(packageName, "medium_button")).click()
+
+        // Click on the "Add" button
+        device.findObject(By.text("Add")).click()
+
+        // Wait for the task to be displayed on the screen, confirming the dialog is gone.
+        val taskAppeared = device.wait(Until.hasObject(By.text("Don't delete this task")), LAUNCH_TIMEOUT)
+        assert(taskAppeared)
+
+        // Find the list item and click the delete button within it.
+        val taskListItem = device.findObject(By.hasChild(By.text("Don't delete this task")))
+        taskListItem.findObject(By.res(packageName, "delete_button")).click()
+
+        // Verify the confirmation dialog is shown
+        val confirmationDialogAppeared = device.wait(Until.hasObject(By.text("Delete Task")), LAUNCH_TIMEOUT)
+        assert(confirmationDialogAppeared)
+
+        // Click the "Cancel" button in the confirmation dialog
+        device.findObject(By.text("Cancel")).click()
+
+        // After the click, the UI re-renders. We now wait for the task to disappear
+        val taskStillExists = device.wait(Until.hasObject(By.text("Don't delete this task")), LAUNCH_TIMEOUT)
+
+        assert(taskStillExists)
     }
 }

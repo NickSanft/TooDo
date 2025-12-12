@@ -51,23 +51,23 @@ class TaskCreationAndCompletionTest {
         device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
 
         // Type in the task title and select the difficulty
-        device.findObject(By.res(packageName, "task_title_input")).text = "Complete this task"
+        device.findObject(By.res(packageName, "task_title_input")).text = "My new task"
         device.findObject(By.res(packageName, "medium_button")).click()
 
         // Click on the "Add" button
         device.findObject(By.text("Add")).click()
 
         // Wait for the task to be displayed on the screen, confirming the dialog is gone.
-        val taskAppeared = device.wait(Until.hasObject(By.text("Complete this task")), LAUNCH_TIMEOUT)
+        val taskAppeared = device.wait(Until.hasObject(By.text("My new task")), LAUNCH_TIMEOUT)
         assert(taskAppeared)
 
         // Find the list item and click the checkbox within it.
-        val taskListItem = device.findObject(By.hasChild(By.text("Complete this task")))
+        val taskListItem = device.findObject(By.hasChild(By.text("My new task")))
         taskListItem.findObject(By.res(packageName, "checkBox")).click()
 
         // After the click, the UI re-renders, making the old object stale.
         // We now wait for a new object to appear that matches the completed state.
-        val checkedItemSelector = By.hasChild(By.text("Complete this task"))
+        val checkedItemSelector = By.hasChild(By.text("My new task"))
             .hasChild(By.res(packageName, "checkBox").checked(true))
         val itemIsChecked = device.wait(Until.hasObject(checkedItemSelector), LAUNCH_TIMEOUT)
 

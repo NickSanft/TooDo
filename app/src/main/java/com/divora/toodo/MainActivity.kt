@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = TaskListAdapter(
             { task, isChecked -> taskViewModel.update(task.copy(isCompleted = isChecked)) },
-            { task -> taskViewModel.delete(task) } // Add this line for the delete functionality
+            { task -> showDeleteConfirmationDialog(task) }
         )
         binding.root.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.task_list).adapter = adapter
         binding.root.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.task_list).layoutManager = LinearLayoutManager(this)
@@ -67,6 +67,17 @@ class MainActivity : AppCompatActivity() {
                     else -> 5
                 }
                 taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points))
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showDeleteConfirmationDialog(task: Task) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Task")
+            .setMessage("Are you sure you want to delete this task?")
+            .setPositiveButton("Delete") { _, _ ->
+                taskViewModel.delete(task)
             }
             .setNegativeButton("Cancel", null)
             .show()

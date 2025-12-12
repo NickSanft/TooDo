@@ -1,4 +1,3 @@
-
 package com.divora.toodo
 
 import android.content.Context
@@ -14,7 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class TaskCreationAndCompletionTest {
+class TaskDeletionTest {
 
     private lateinit var device: UiDevice
     private val packageName = ApplicationProvider.getApplicationContext<Context>().packageName
@@ -43,7 +42,7 @@ class TaskCreationAndCompletionTest {
     }
 
     @Test
-    fun createTaskAndCompleteIt() {
+    fun createTaskAndDeleteIt() {
         // Click on the FAB to open the add task dialog
         device.findObject(By.res(packageName, "fab")).click()
 
@@ -51,26 +50,23 @@ class TaskCreationAndCompletionTest {
         device.wait(Until.hasObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT)
 
         // Type in the task title and select the difficulty
-        device.findObject(By.res(packageName, "task_title_input")).text = "Complete this task"
+        device.findObject(By.res(packageName, "task_title_input")).text = "Delete this task"
         device.findObject(By.res(packageName, "medium_button")).click()
 
         // Click on the "Add" button
         device.findObject(By.text("Add")).click()
 
         // Wait for the task to be displayed on the screen, confirming the dialog is gone.
-        val taskAppeared = device.wait(Until.hasObject(By.text("Complete this task")), LAUNCH_TIMEOUT)
+        val taskAppeared = device.wait(Until.hasObject(By.text("Delete this task")), LAUNCH_TIMEOUT)
         assert(taskAppeared)
 
-        // Find the list item and click the checkbox within it.
-        val taskListItem = device.findObject(By.hasChild(By.text("Complete this task")))
-        taskListItem.findObject(By.res(packageName, "checkBox")).click()
+        // Find the list item and click the delete button within it.
+        val taskListItem = device.findObject(By.hasChild(By.text("Delete this task")))
+        taskListItem.findObject(By.res(packageName, "delete_button")).click()
 
-        // After the click, the UI re-renders, making the old object stale.
-        // We now wait for a new object to appear that matches the completed state.
-        val checkedItemSelector = By.hasChild(By.text("Complete this task"))
-            .hasChild(By.res(packageName, "checkBox").checked(true))
-        val itemIsChecked = device.wait(Until.hasObject(checkedItemSelector), LAUNCH_TIMEOUT)
+        // After the click, the UI re-renders. We now wait for the task to disappear
+        val taskDisappeared = device.wait(Until.gone(By.text("Delete this task")), LAUNCH_TIMEOUT)
 
-        assert(itemIsChecked)
+        assert(taskDisappeared)
     }
 }

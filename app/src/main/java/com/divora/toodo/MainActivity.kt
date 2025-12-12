@@ -26,9 +26,10 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        val adapter = TaskListAdapter { task, isChecked ->
-            taskViewModel.update(task.copy(isCompleted = isChecked))
-        }
+        val adapter = TaskListAdapter(
+            { task, isChecked -> taskViewModel.update(task.copy(isCompleted = isChecked)) },
+            { task -> taskViewModel.delete(task) } // Add this line for the delete functionality
+        )
         binding.root.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.task_list).adapter = adapter
         binding.root.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.task_list).layoutManager = LinearLayoutManager(this)
 

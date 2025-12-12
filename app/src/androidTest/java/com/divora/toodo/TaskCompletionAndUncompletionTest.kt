@@ -49,43 +49,35 @@ class TaskCompletionAndUncompletionTest {
         // Create and complete a task
         device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Complete me"
-        device.findObject(By.text("Hard (5 points)")).click()
-        device.findObject(By.text("Add")).click()
+        device.wait(Until.findObject(By.res(packageName, "hard_button")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
-        Thread.sleep(1000) // Wait for recycler view to settle
 
-        val completeCheckbox1 = device.wait(Until.findObject(By.desc("Complete task: Complete me")), LAUNCH_TIMEOUT)
-        completeCheckbox1.click()
+        device.wait(Until.findObject(By.desc("Complete task: Complete me")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("Complete me")), LAUNCH_TIMEOUT)
-        device.findObject(By.text("Completed")).click()
-        Thread.sleep(1000) // Wait for recycler view to settle
+        device.wait(Until.findObject(By.text("Completed")), LAUNCH_TIMEOUT).click()
         device.wait(Until.hasObject(By.text("Complete me")), LAUNCH_TIMEOUT)
 
         // Uncheck the task and confirm
-        val uncheckCheckbox = device.wait(Until.findObject(By.desc("Complete task: Complete me")), LAUNCH_TIMEOUT)
-        uncheckCheckbox.click()
+        device.wait(Until.findObject(By.desc("Complete task: Complete me")), LAUNCH_TIMEOUT).click()
         device.wait(Until.findObject(By.text("Uncheck")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("Complete me")), LAUNCH_TIMEOUT)
-        device.findObject(By.text("Active")).click()
+        device.wait(Until.findObject(By.text("Active")), LAUNCH_TIMEOUT).click()
         device.wait(Until.hasObject(By.text("Complete me")), LAUNCH_TIMEOUT)
 
         // Create a task and cancel unchecking
         device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "No reprompt"
-        device.findObject(By.text("Hard (5 points)")).click()
-        device.findObject(By.text("Add")).click()
+        device.wait(Until.findObject(By.res(packageName, "hard_button")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
-        Thread.sleep(1000) // Wait for recycler view to settle
 
-        val completeCheckbox2 = device.wait(Until.findObject(By.desc("Complete task: No reprompt")), LAUNCH_TIMEOUT)
-        completeCheckbox2.click()
+        device.wait(Until.findObject(By.desc("Complete task: No reprompt")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("No reprompt")), LAUNCH_TIMEOUT)
-        device.findObject(By.text("Completed")).click()
-        Thread.sleep(1000) // Wait for recycler view to settle
+        device.wait(Until.findObject(By.text("Completed")), LAUNCH_TIMEOUT).click()
 
         // Attempt to uncheck and then cancel
-        val uncheckCheckbox2 = device.wait(Until.findObject(By.desc("Complete task: No reprompt")), LAUNCH_TIMEOUT)
-        uncheckCheckbox2.click()
+        device.wait(Until.findObject(By.desc("Complete task: No reprompt")), LAUNCH_TIMEOUT).click()
         device.wait(Until.findObject(By.text("Cancel")), LAUNCH_TIMEOUT).click()
         device.wait(Until.hasObject(By.text("No reprompt")), LAUNCH_TIMEOUT)
 

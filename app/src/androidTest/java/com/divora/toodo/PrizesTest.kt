@@ -38,6 +38,8 @@ class PrizesTest {
             taskViewModel.deleteAll()
             val prizesViewModel = ViewModelProvider(it).get(PrizesViewModel::class.java)
             prizesViewModel.deleteAll()
+            val pointLedgerViewModel = ViewModelProvider(it).get(PointLedgerViewModel::class.java)
+            pointLedgerViewModel.deleteAll()
         }
     }
 
@@ -73,6 +75,54 @@ class PrizesTest {
 
         // Verify the new prize is still displayed in the list
         device.wait(Until.hasObject(By.text("Custom Prize")), LAUNCH_TIMEOUT)
+    }
+
+    @Test
+    fun testEditCustomPrize() {
+        // Switch to the "Prizes" tab
+        device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
+
+        // Add a custom prize to edit
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "prize_name_input")), LAUNCH_TIMEOUT).text = "Custom Prize"
+        device.wait(Until.findObject(By.res(packageName, "prize_cost_input")), LAUNCH_TIMEOUT).text = "5"
+        device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
+
+        // Click the "Edit" button
+        device.wait(Until.findObject(By.res(packageName, "edit_button")), LAUNCH_TIMEOUT).click()
+
+        // Verify the "Edit Prize" dialog is shown
+        device.wait(Until.hasObject(By.text("Edit Prize")), LAUNCH_TIMEOUT)
+
+        // Edit the prize
+        device.wait(Until.findObject(By.res(packageName, "prize_name_input")), LAUNCH_TIMEOUT).text = "Updated Prize"
+        device.wait(Until.findObject(By.res(packageName, "prize_cost_input")), LAUNCH_TIMEOUT).text = "10"
+        device.wait(Until.findObject(By.text("Save")), LAUNCH_TIMEOUT).click()
+
+        // Verify the prize is updated in the list
+        device.wait(Until.hasObject(By.text("Updated Prize")), LAUNCH_TIMEOUT)
+        device.wait(Until.hasObject(By.text("10 points")), LAUNCH_TIMEOUT)
+    }
+
+    @Test
+    fun testDeleteCustomPrize() {
+        // Switch to the "Prizes" tab
+        device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
+
+        // Add a custom prize to delete
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "prize_name_input")), LAUNCH_TIMEOUT).text = "Custom Prize"
+        device.wait(Until.findObject(By.res(packageName, "prize_cost_input")), LAUNCH_TIMEOUT).text = "5"
+        device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
+
+        // Click the "Delete" button
+        device.wait(Until.findObject(By.res(packageName, "delete_button")), LAUNCH_TIMEOUT).click()
+
+        // Confirm the deletion
+        device.wait(Until.findObject(By.text("Delete")), LAUNCH_TIMEOUT).click()
+
+        // Verify the prize is removed from the list
+        device.wait(Until.gone(By.text("Custom Prize")), LAUNCH_TIMEOUT)
     }
 
     @Test

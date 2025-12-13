@@ -36,7 +36,8 @@ class MainActivity : AppCompatActivity() {
             tab.text = when (position) {
                 0 -> "Active"
                 1 -> "Completed"
-                else -> "Prizes"
+                2 -> "Prizes"
+                else -> "Ledger"
             }
         }.attach()
 
@@ -48,7 +49,8 @@ class MainActivity : AppCompatActivity() {
                 binding.fab.visibility = when (position) {
                     0 -> View.VISIBLE
                     1 -> View.GONE
-                    else -> View.VISIBLE
+                    2 -> View.VISIBLE
+                    else -> View.GONE
                 }
             }
         })

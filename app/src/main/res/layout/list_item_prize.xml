@@ -16,7 +16,32 @@
         android:id="@+id/prize_cost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
         android:text="0 points" />
+
+    <LinearLayout
+        android:id="@+id/custom_prize_actions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android.visibility="gone">
+
+        <Button
+            android:id="@+id/edit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:text="Edit" />
+
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:layout_marginStart="8dp"
+            android:text="Delete" />
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/redeem_button"

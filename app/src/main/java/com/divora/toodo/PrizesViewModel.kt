@@ -34,6 +34,10 @@ class PrizesViewModel(application: Application) : AndroidViewModel(application) 
         repository.delete(prize)
     }
 
+    fun updatePrize(prize: Prize) = viewModelScope.launch(Dispatchers.IO) {
+        repository.update(prize)
+    }
+
     fun deleteAll() = viewModelScope.launch(Dispatchers.IO) {
         repository.deleteAll()
     }

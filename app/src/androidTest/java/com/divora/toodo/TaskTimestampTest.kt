@@ -36,6 +36,10 @@ class TaskTimestampTest {
         scenario.onActivity {
             val taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
             taskViewModel.deleteAll()
+            val prizesViewModel = ViewModelProvider(it).get(PrizesViewModel::class.java)
+            prizesViewModel.deleteAll()
+            val pointLedgerViewModel = ViewModelProvider(it).get(PointLedgerViewModel::class.java)
+            pointLedgerViewModel.deleteAll()
         }
     }
 

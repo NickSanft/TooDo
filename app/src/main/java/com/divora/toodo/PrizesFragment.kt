@@ -18,6 +18,7 @@ class PrizesFragment : Fragment(), FabClickHandler {
 
     private lateinit var taskViewModel: TaskViewModel
     private lateinit var prizesViewModel: PrizesViewModel
+    private lateinit var pointLedgerViewModel: PointLedgerViewModel
     private lateinit var adapter: PrizesAdapter
 
     override fun onCreateView(
@@ -34,10 +35,13 @@ class PrizesFragment : Fragment(), FabClickHandler {
 
         taskViewModel = ViewModelProvider(requireActivity()).get(TaskViewModel::class.java)
         prizesViewModel = ViewModelProvider(this).get(PrizesViewModel::class.java)
+        pointLedgerViewModel = ViewModelProvider(this).get(PointLedgerViewModel::class.java)
 
-        adapter = PrizesAdapter { prize ->
-            showRedeemConfirmationDialog(prize)
-        }
+        adapter = PrizesAdapter(
+            onRedeemClicked = { prize -> showRedeemConfirmationDialog(prize) },
+            onEditClicked = { prize -> showEditPrizeDialog(prize) },
+            onDeleteClicked = { prize -> showDeleteConfirmationDialog(prize) }
+        )
 
         binding.prizesList.adapter = adapter
         binding.prizesList.layoutManager = LinearLayoutManager(context)
@@ -76,6 +80,40 @@ class PrizesFragment : Fragment(), FabClickHandler {
             .show()
     }
 
+    private fun showEditPrizeDialog(prize: Prize) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_prize, null)
+        val prizeNameInput = dialogView.findViewById<EditText>(R.id.prize_name_input)
+        val prizeCostInput = dialogView.findViewById<EditText>(R.id.prize_cost_input)
+
+        prizeNameInput.setText(prize.name)
+        prizeCostInput.setText(prize.cost.toString())
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit Prize")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                val name = prizeNameInput.text.toString()
+                val cost = prizeCostInput.text.toString().toIntOrNull() ?: 0
+                if (name.isNotBlank()) {
+                    val updatedPrize = prize.copy(name = name, cost = cost)
+                    prizesViewModel.updatePrize(updatedPrize)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showDeleteConfirmationDialog(prize: Prize) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Prize")
+            .setMessage("Are you sure you want to delete \"${prize.name}\"?")
+            .setPositiveButton("Delete") { _, _ ->
+                prizesViewModel.removePrize(prize)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     private fun showRedeemConfirmationDialog(prize: Prize) {
         val currentPoints = taskViewModel.totalPoints.value ?: 0
         if (currentPoints < prize.cost) {
@@ -97,6 +135,14 @@ class PrizesFragment : Fragment(), FabClickHandler {
                         completedAt = System.currentTimeMillis()
                     )
                     taskViewModel.insert(redeemedTask)
+
+                    val ledgerEntry = PointLedger(
+                        description = "Redeemed: ${prize.name}",
+                        points = -prize.cost,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    pointLedgerViewModel.insert(ledgerEntry)
+
                     prizesViewModel.removePrize(prize)
                 }
                 .setNegativeButton("Cancel", null)

@@ -9,15 +9,20 @@ import kotlinx.coroutines.launch
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: TaskRepository
+    private val pointLedgerRepository: PointLedgerRepository
 
     val allTasks: LiveData<List<Task>>
     val totalPoints: LiveData<Int>
 
     init {
-        val taskDao = AppDatabase.getDatabase(application).taskDao()
+        val appDatabase = AppDatabase.getDatabase(application)
+        val taskDao = appDatabase.taskDao()
         repository = TaskRepository(taskDao)
         allTasks = repository.allTasks
         totalPoints = repository.totalPoints
+
+        val pointLedgerDao = appDatabase.pointLedgerDao()
+        pointLedgerRepository = PointLedgerRepository(pointLedgerDao)
     }
 
     fun insert(task: Task) = viewModelScope.launch {
@@ -26,6 +31,14 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     fun update(task: Task) = viewModelScope.launch {
         val taskWithTimestamp = if (task.isCompleted) {
+            if (task.completedAt == null) { // Only add to ledger if it's a new completion
+                val ledgerEntry = PointLedger(
+                    description = "Completed: ${task.title}",
+                    points = task.points,
+                    timestamp = System.currentTimeMillis()
+                )
+                pointLedgerRepository.insert(ledgerEntry)
+            }
             task.copy(completedAt = System.currentTimeMillis())
         } else {
             task.copy(completedAt = null)

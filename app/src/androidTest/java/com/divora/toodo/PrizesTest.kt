@@ -31,13 +31,13 @@ class PrizesTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val sharedPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         sharedPrefs.edit().clear().apply()
-        val prizesPrefs = context.getSharedPreferences("prizes", Context.MODE_PRIVATE)
-        prizesPrefs.edit().clear().apply()
 
         scenario = ActivityScenario.launch(MainActivity::class.java)
         scenario.onActivity {
             val taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
             taskViewModel.deleteAll()
+            val prizesViewModel = ViewModelProvider(it).get(PrizesViewModel::class.java)
+            prizesViewModel.deleteAll()
         }
     }
 

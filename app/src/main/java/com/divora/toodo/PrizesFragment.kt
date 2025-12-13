@@ -1,6 +1,5 @@
 package com.divora.toodo
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,8 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.divora.toodo.databinding.FragmentPrizesBinding
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 class PrizesFragment : Fragment(), FabClickHandler {
 
@@ -20,9 +17,8 @@ class PrizesFragment : Fragment(), FabClickHandler {
     private val binding get() = _binding!!
 
     private lateinit var taskViewModel: TaskViewModel
+    private lateinit var prizesViewModel: PrizesViewModel
     private lateinit var adapter: PrizesAdapter
-    private val prizes = mutableListOf<Prize>()
-    private val gson = Gson()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,10 +33,9 @@ class PrizesFragment : Fragment(), FabClickHandler {
         super.onViewCreated(view, savedInstanceState)
 
         taskViewModel = ViewModelProvider(requireActivity()).get(TaskViewModel::class.java)
+        prizesViewModel = ViewModelProvider(this).get(PrizesViewModel::class.java)
 
-        loadPrizes()
-
-        adapter = PrizesAdapter(prizes) { prize ->
+        adapter = PrizesAdapter { prize ->
             showRedeemConfirmationDialog(prize)
         }
 
@@ -49,6 +44,11 @@ class PrizesFragment : Fragment(), FabClickHandler {
 
         taskViewModel.totalPoints.observe(viewLifecycleOwner) {
             points -> binding.totalPointsText.text = "Total Points: ${points ?: 0}"
+        }
+
+        prizesViewModel.prizes.observe(viewLifecycleOwner) {
+            prizes ->
+            adapter.submitList(prizes)
         }
     }
 
@@ -68,10 +68,8 @@ class PrizesFragment : Fragment(), FabClickHandler {
                 val name = prizeNameInput.text.toString()
                 val cost = prizeCostInput.text.toString().toIntOrNull() ?: 0
                 if (name.isNotBlank()) {
-                    val newPrize = Prize(name, cost)
-                    prizes.add(newPrize)
-                    savePrizes()
-                    adapter.notifyItemInserted(prizes.size - 1)
+                    val newPrize = Prize(name = name, cost = cost)
+                    prizesViewModel.addPrize(newPrize)
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -99,39 +97,11 @@ class PrizesFragment : Fragment(), FabClickHandler {
                         completedAt = System.currentTimeMillis()
                     )
                     taskViewModel.insert(redeemedTask)
-                    // Also remove the prize from the list, so it can only be redeemed once
-                    prizes.remove(prize)
-                    savePrizes()
-                    adapter.notifyDataSetChanged()
+                    prizesViewModel.removePrize(prize)
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
         }
-    }
-
-    private fun savePrizes() {
-        val sharedPrefs = requireActivity().getSharedPreferences("prizes", Context.MODE_PRIVATE)
-        val json = gson.toJson(prizes.filter { !isDefaultPrize(it) })
-        sharedPrefs.edit().putString("custom_prizes", json).apply()
-    }
-
-    private fun loadPrizes() {
-        val sharedPrefs = requireActivity().getSharedPreferences("prizes", Context.MODE_PRIVATE)
-        val json = sharedPrefs.getString("custom_prizes", null)
-        val type = object : TypeToken<MutableList<Prize>>() {}.type
-        val customPrizes: MutableList<Prize> = gson.fromJson(json, type) ?: mutableListOf()
-
-        prizes.clear()
-        prizes.addAll(listOf(
-            Prize("Movie Night", 25),
-            Prize("Ice Cream", 10),
-            Prize("New Book", 50)
-        ))
-        prizes.addAll(customPrizes)
-    }
-
-    private fun isDefaultPrize(prize: Prize): Boolean {
-        return prize.name == "Movie Night" || prize.name == "Ice Cream" || prize.name == "New Book"
     }
 
     override fun onDestroyView() {

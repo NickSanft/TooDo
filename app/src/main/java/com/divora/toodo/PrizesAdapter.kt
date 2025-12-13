@@ -5,12 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
 class PrizesAdapter(
-    private val prizes: List<Prize>,
     private val onRedeemClicked: (Prize) -> Unit
-) : RecyclerView.Adapter<PrizesAdapter.PrizeViewHolder>() {
+) : ListAdapter<Prize, PrizesAdapter.PrizeViewHolder>(PrizeDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):
             PrizeViewHolder {
@@ -20,11 +21,9 @@ class PrizesAdapter(
     }
 
     override fun onBindViewHolder(holder: PrizeViewHolder, position: Int) {
-        val prize = prizes[position]
+        val prize = getItem(position)
         holder.bind(prize, onRedeemClicked)
     }
-
-    override fun getItemCount(): Int = prizes.size
 
     class PrizeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val prizeNameView: TextView = itemView.findViewById(R.id.prize_name)
@@ -39,5 +38,15 @@ class PrizesAdapter(
                 onRedeemClicked(prize)
             }
         }
+    }
+}
+
+class PrizeDiffCallback : DiffUtil.ItemCallback<Prize>() {
+    override fun areItemsTheSame(oldItem: Prize, newItem: Prize): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: Prize, newItem: Prize): Boolean {
+        return oldItem == newItem
     }
 }

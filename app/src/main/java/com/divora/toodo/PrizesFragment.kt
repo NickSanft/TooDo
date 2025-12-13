@@ -5,11 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.divora.toodo.databinding.FragmentPrizesBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class PrizesFragment : Fragment(), FabClickHandler {
 
@@ -65,7 +65,7 @@ class PrizesFragment : Fragment(), FabClickHandler {
         val prizeNameInput = dialogView.findViewById<EditText>(R.id.prize_name_input)
         val prizeCostInput = dialogView.findViewById<EditText>(R.id.prize_cost_input)
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("Add New Prize")
             .setView(dialogView)
             .setPositiveButton("Add") { _, _ ->
@@ -88,7 +88,7 @@ class PrizesFragment : Fragment(), FabClickHandler {
         prizeNameInput.setText(prize.name)
         prizeCostInput.setText(prize.cost.toString())
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("Edit Prize")
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
@@ -104,7 +104,7 @@ class PrizesFragment : Fragment(), FabClickHandler {
     }
 
     private fun showDeleteConfirmationDialog(prize: Prize) {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("Delete Prize")
             .setMessage("Are you sure you want to delete \"${prize.name}\"?")
             .setPositiveButton("Delete") { _, _ ->
@@ -117,13 +117,13 @@ class PrizesFragment : Fragment(), FabClickHandler {
     private fun showRedeemConfirmationDialog(prize: Prize) {
         val currentPoints = taskViewModel.totalPoints.value ?: 0
         if (currentPoints < prize.cost) {
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Not Enough Points")
                 .setMessage("You do not have enough points to redeem this prize.")
                 .setPositiveButton("OK", null)
                 .show()
         } else {
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Redeem Prize")
                 .setMessage("Are you sure you want to redeem \"${prize.name}\" for ${prize.cost} points?")
                 .setPositiveButton("Redeem") { _, _ ->

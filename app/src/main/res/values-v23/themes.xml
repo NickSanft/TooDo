@@ -1,9 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.TooDo" parent="Base.Theme.TooDo">
-        <!-- Transparent system bars for edge-to-edge. -->
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
+    <style name="Base.Theme.TooDo" parent="Theme.Material3.DayNight">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/themes.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>

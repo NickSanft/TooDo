@@ -1,29 +1,20 @@
 package com.divora.toodo
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class TaskViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository: TaskRepository
+@HiltViewModel
+class TaskViewModel @Inject constructor(
+    private val repository: TaskRepository,
     private val pointLedgerRepository: PointLedgerRepository
+) : ViewModel() {
 
-    val allTasks: LiveData<List<Task>>
-    val totalPoints: LiveData<Int>
-
-    init {
-        val appDatabase = AppDatabase.getDatabase(application)
-        val taskDao = appDatabase.taskDao()
-        repository = TaskRepository(taskDao)
-        allTasks = repository.allTasks
-        totalPoints = repository.totalPoints
-
-        val pointLedgerDao = appDatabase.pointLedgerDao()
-        pointLedgerRepository = PointLedgerRepository(pointLedgerDao)
-    }
+    val allTasks: LiveData<List<Task>> = repository.allTasks
+    val totalPoints: LiveData<Int> = repository.totalPoints
 
     fun insert(task: Task) = viewModelScope.launch {
         repository.insert(task)

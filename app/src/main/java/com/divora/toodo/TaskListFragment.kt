@@ -8,13 +8,15 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class TaskListFragment : Fragment(), FabClickHandler {
 
-    private lateinit var taskViewModel: TaskViewModel
+    private val taskViewModel: TaskViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,7 +46,6 @@ class TaskListFragment : Fragment(), FabClickHandler {
         view.findViewById<RecyclerView>(R.id.task_list).adapter = adapter
         view.findViewById<RecyclerView>(R.id.task_list).layoutManager = LinearLayoutManager(context)
 
-        taskViewModel = ViewModelProvider(requireActivity()).get(TaskViewModel::class.java)
         taskViewModel.allTasks.observe(viewLifecycleOwner) { tasks ->
             tasks?.let {
                 val filteredTasks = it.filter { it.isCompleted == isCompleted }

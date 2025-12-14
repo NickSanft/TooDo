@@ -1,22 +1,21 @@
 package com.divora.toodo
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PrizesViewModel(application: Application) : AndroidViewModel(application) {
-
+@HiltViewModel
+class PrizesViewModel @Inject constructor(
     private val repository: PrizeRepository
-    val prizes: LiveData<List<Prize>>
+) : ViewModel() {
+
+    val prizes: LiveData<List<Prize>> = repository.allPrizes
 
     init {
-        val prizeDao = AppDatabase.getDatabase(application).prizeDao()
-        repository = PrizeRepository(prizeDao)
-        prizes = repository.allPrizes
-
         viewModelScope.launch(Dispatchers.IO) {
             if (repository.getCount() == 0) {
                 repository.insert(Prize(name = "Movie Night", cost = 25))

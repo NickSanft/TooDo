@@ -1,22 +1,19 @@
 package com.divora.toodo
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PointLedgerViewModel(application: Application) : AndroidViewModel(application) {
-
+@HiltViewModel
+class PointLedgerViewModel @Inject constructor(
     private val repository: PointLedgerRepository
-    val allLedgerEntries: LiveData<List<PointLedger>>
+) : ViewModel() {
 
-    init {
-        val pointLedgerDao = AppDatabase.getDatabase(application).pointLedgerDao()
-        repository = PointLedgerRepository(pointLedgerDao)
-        allLedgerEntries = repository.allLedgerEntries
-    }
+    val allLedgerEntries: LiveData<List<PointLedger>> = repository.allLedgerEntries
 
     fun insert(ledgerEntry: PointLedger) = viewModelScope.launch(Dispatchers.IO) {
         repository.insert(ledgerEntry)

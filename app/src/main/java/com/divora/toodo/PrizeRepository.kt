@@ -1,8 +1,9 @@
 package com.divora.toodo
 
 import androidx.lifecycle.LiveData
+import javax.inject.Inject
 
-class PrizeRepository(private val prizeDao: PrizeDao) {
+class PrizeRepository @Inject constructor(private val prizeDao: PrizeDao) {
 
     val allPrizes: LiveData<List<Prize>> = prizeDao.getAllPrizes()
 

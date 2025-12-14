@@ -1,8 +1,9 @@
 package com.divora.toodo
 
 import androidx.lifecycle.LiveData
+import javax.inject.Inject
 
-class PointLedgerRepository(private val pointLedgerDao: PointLedgerDao) {
+class PointLedgerRepository @Inject constructor(private val pointLedgerDao: PointLedgerDao) {
 
     val allLedgerEntries: LiveData<List<PointLedger>> = pointLedgerDao.getAllLedgerEntries()
 

@@ -5,16 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.divora.toodo.databinding.FragmentPointLedgerBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class PointLedgerFragment : Fragment() {
 
     private var _binding: FragmentPointLedgerBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var pointLedgerViewModel: PointLedgerViewModel
+    private val pointLedgerViewModel: PointLedgerViewModel by viewModels()
     private lateinit var adapter: PointLedgerAdapter
 
     override fun onCreateView(
@@ -28,8 +30,6 @@ class PointLedgerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        pointLedgerViewModel = ViewModelProvider(this).get(PointLedgerViewModel::class.java)
 
         adapter = PointLedgerAdapter()
         binding.ledgerList.adapter = adapter

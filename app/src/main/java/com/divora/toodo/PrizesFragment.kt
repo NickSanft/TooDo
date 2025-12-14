@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.divora.toodo.databinding.FragmentPrizesBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
@@ -18,14 +20,15 @@ import nl.dionsegijn.konfetti.core.models.Shape
 import nl.dionsegijn.konfetti.core.models.Size
 import java.util.concurrent.TimeUnit
 
+@AndroidEntryPoint
 class PrizesFragment : Fragment(), FabClickHandler {
 
     private var _binding: FragmentPrizesBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var taskViewModel: TaskViewModel
-    private lateinit var prizesViewModel: PrizesViewModel
-    private lateinit var pointLedgerViewModel: PointLedgerViewModel
+    private val taskViewModel: TaskViewModel by activityViewModels()
+    private val prizesViewModel: PrizesViewModel by viewModels()
+    private val pointLedgerViewModel: PointLedgerViewModel by viewModels()
     private lateinit var adapter: PrizesAdapter
 
     override fun onCreateView(
@@ -39,10 +42,6 @@ class PrizesFragment : Fragment(), FabClickHandler {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        taskViewModel = ViewModelProvider(requireActivity()).get(TaskViewModel::class.java)
-        prizesViewModel = ViewModelProvider(this).get(PrizesViewModel::class.java)
-        pointLedgerViewModel = ViewModelProvider(this).get(PointLedgerViewModel::class.java)
 
         adapter = PrizesAdapter(
             onRedeemClicked = { prize -> showRedeemConfirmationDialog(prize) },

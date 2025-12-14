@@ -53,7 +53,7 @@ class PointLedgerTest {
         // Create two tasks to get 10 points
         for (i in 1..2) {
             device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
-            device.waitForIdle()
+            device.wait(Until.hasObject(By.text("Add New Task")), LAUNCH_TIMEOUT)
             device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Get points $i"
             device.wait(Until.findObject(By.res(packageName, "hard_button")), LAUNCH_TIMEOUT).click()
             device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
@@ -66,14 +66,18 @@ class PointLedgerTest {
 
         // Switch to the "Prizes" tab
         device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.hasObject(By.res(packageName, "prizes_list")), LAUNCH_TIMEOUT)
         device.waitForIdle()
 
         // Redeem the "Ice Cream" prize
         device.wait(Until.findObject(By.desc("Redeem prize: Ice Cream")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.hasObject(By.text("Redeem Prize")), LAUNCH_TIMEOUT)
         device.waitForIdle()
 
         // Confirm the redemption in the dialog
         device.wait(Until.findObject(By.text("Redeem")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.gone(By.text("Redeem Prize")), LAUNCH_TIMEOUT)
+        device.wait(Until.gone(By.text("Ice Cream")), LAUNCH_TIMEOUT)
         device.waitForIdle()
 
         // Switch to the "Ledger" tab

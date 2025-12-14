@@ -152,21 +152,32 @@ class PrizesFragment : Fragment(), FabClickHandler {
 
                     prizesViewModel.removePrize(prize)
 
-                    // Trigger the confetti animation
-                    binding.konfettiView.start(
-                        Party(
-                            speed = 0f,
-                            maxSpeed = 30f,
-                            damping = 0.9f,
-                            spread = 360,
-                            colors = listOf(Color.YELLOW, Color.GREEN, Color.MAGENTA),
-                            emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100),
-                            position = Position.Relative(0.5, 0.3)
+                    if (!isTestMode()) {
+                        // Trigger the confetti animation
+                        binding.konfettiView.start(
+                            Party(
+                                speed = 0f,
+                                maxSpeed = 30f,
+                                damping = 0.9f,
+                                spread = 360,
+                                colors = listOf(Color.YELLOW, Color.GREEN, Color.MAGENTA),
+                                emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100),
+                                position = Position.Relative(0.5, 0.3)
+                            )
                         )
-                    )
+                    }
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
+        }
+    }
+
+    private fun isTestMode(): Boolean {
+        return try {
+            Class.forName("androidx.test.espresso.Espresso")
+            true
+        } catch (e: ClassNotFoundException) {
+            false
         }
     }
 

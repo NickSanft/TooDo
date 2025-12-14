@@ -52,24 +52,31 @@ class SettingsTest {
     fun testDisableConfirmations() {
         // Open settings
         device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
         device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Disable confirmations
         device.wait(Until.findObject(By.res(packageName, "disable_confirmations_switch")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Go back to the main screen
         device.pressBack()
+        device.waitForIdle()
 
         // Create a task
         device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.hasObject(By.text("Add New Task")), LAUNCH_TIMEOUT)
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "No confirm task"
-        device.findObject(By.text("Hard (5 points)")).click()
-        device.findObject(By.text("Add")).click()
+        device.wait(Until.findObject(By.res(packageName, "hard_button")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
+        device.waitForIdle()
 
         // Delete the task and verify no confirmation dialog appears
         device.wait(Until.findObject(By.desc("Delete task: No confirm task")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("No confirm task")), LAUNCH_TIMEOUT)
+        device.waitForIdle()
 
         // Verify that the confirmation dialog does not appear
         val confirmationDialog = device.findObject(By.text("Delete Task"))
@@ -80,15 +87,21 @@ class SettingsTest {
     fun testThemeChange() {
         // Open settings
         device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
         device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Change to dark theme
         device.wait(Until.findObject(By.res(packageName, "dark_theme_button")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Go back and reopen settings
         device.pressBack()
+        device.waitForIdle()
         device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
         device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Verify dark theme is selected
         val darkThemeButton = device.wait(Until.findObject(By.res(packageName, "dark_theme_button")), LAUNCH_TIMEOUT)
@@ -96,9 +109,13 @@ class SettingsTest {
 
         // Change back to light theme
         device.wait(Until.findObject(By.res(packageName, "light_theme_button")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
         device.pressBack()
+        device.waitForIdle()
         device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
         device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         val lightThemeButton = device.wait(Until.findObject(By.res(packageName, "light_theme_button")), LAUNCH_TIMEOUT)
         assert(lightThemeButton.isChecked)

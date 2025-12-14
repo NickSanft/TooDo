@@ -108,18 +108,23 @@ class PrizesTest {
     fun testDeleteCustomPrize() {
         // Switch to the "Prizes" tab
         device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Add a custom prize to delete
         device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
         device.wait(Until.findObject(By.res(packageName, "prize_name_input")), LAUNCH_TIMEOUT).text = "Custom Prize"
         device.wait(Until.findObject(By.res(packageName, "prize_cost_input")), LAUNCH_TIMEOUT).text = "5"
         device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Click the "Delete" button
         device.wait(Until.findObject(By.res(packageName, "delete_button")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Confirm the deletion
         device.wait(Until.findObject(By.text("Delete")), LAUNCH_TIMEOUT).click()
+        device.waitForIdle()
 
         // Verify the prize is removed from the list
         device.wait(Until.gone(By.text("Custom Prize")), LAUNCH_TIMEOUT)

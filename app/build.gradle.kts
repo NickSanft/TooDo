@@ -49,6 +49,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.6.0")
     implementation("androidx.navigation:navigation-ui-ktx:2.6.0")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("nl.dionsegijn:konfetti-xml:2.0.2")
 
     testImplementation("junit:junit:4.13.2")
 

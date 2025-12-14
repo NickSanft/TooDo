@@ -1,5 +1,6 @@
 package com.divora.toodo
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.divora.toodo.databinding.FragmentPrizesBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import nl.dionsegijn.konfetti.core.models.Shape
+import nl.dionsegijn.konfetti.core.models.Size
+import java.util.concurrent.TimeUnit
 
 class PrizesFragment : Fragment(), FabClickHandler {
 
@@ -144,6 +151,19 @@ class PrizesFragment : Fragment(), FabClickHandler {
                     pointLedgerViewModel.insert(ledgerEntry)
 
                     prizesViewModel.removePrize(prize)
+
+                    // Trigger the confetti animation
+                    binding.konfettiView.start(
+                        Party(
+                            speed = 0f,
+                            maxSpeed = 30f,
+                            damping = 0.9f,
+                            spread = 360,
+                            colors = listOf(Color.YELLOW, Color.GREEN, Color.MAGENTA),
+                            emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100),
+                            position = Position.Relative(0.5, 0.3)
+                        )
+                    )
                 }
                 .setNegativeButton("Cancel", null)
                 .show()

@@ -37,7 +37,8 @@ class TaskListFragment : Fragment(), FabClickHandler {
                     (activity as MainActivity).showUncheckConfirmationDialog(task)
                 }
             },
-            { task -> (activity as MainActivity).showDeleteConfirmationDialog(task) }
+            { task -> (activity as MainActivity).showDeleteConfirmationDialog(task) },
+            { task -> showEditTaskDialog(task) }
         )
 
         view.findViewById<RecyclerView>(R.id.task_list).adapter = adapter
@@ -84,6 +85,39 @@ class TaskListFragment : Fragment(), FabClickHandler {
                     else -> 5
                 }
                 taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points))
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showEditTaskDialog(task: Task) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_task, null)
+        val taskTitleInput = dialogView.findViewById<EditText>(R.id.task_title_input)
+        val difficultyRadioGroup = dialogView.findViewById<RadioGroup>(R.id.difficulty_radio_group)
+
+        taskTitleInput.setText(task.title)
+        when (task.difficulty) {
+            "Easy" -> difficultyRadioGroup.check(R.id.easy_button)
+            "Medium" -> difficultyRadioGroup.check(R.id.medium_button)
+            "Hard" -> difficultyRadioGroup.check(R.id.hard_button)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit Task")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                val title = taskTitleInput.text.toString()
+                val difficulty = when (difficultyRadioGroup.checkedRadioButtonId) {
+                    R.id.easy_button -> "Easy"
+                    R.id.medium_button -> "Medium"
+                    else -> "Hard"
+                }
+                val points = when (difficulty) {
+                    "Easy" -> 1
+                    "Medium" -> 2
+                    else -> 5
+                }
+                taskViewModel.update(task.copy(title = title, difficulty = difficulty, points = points))
             }
             .setNegativeButton("Cancel", null)
             .show()

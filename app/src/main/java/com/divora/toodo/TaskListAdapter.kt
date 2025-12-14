@@ -15,7 +15,8 @@ import java.util.Locale
 
 class TaskListAdapter(
     private val onTaskCheckedChanged: (Task, Boolean) -> Unit,
-    private val onTaskDeleteClicked: (Task) -> Unit
+    private val onTaskDeleteClicked: (Task) -> Unit,
+    private val onTaskEditClicked: (Task) -> Unit
 ) :
     ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TasksComparator()) {
 
@@ -26,7 +27,7 @@ class TaskListAdapter(
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val current = getItem(position)
-        holder.bind(current, onTaskCheckedChanged, onTaskDeleteClicked)
+        holder.bind(current, onTaskCheckedChanged, onTaskDeleteClicked, onTaskEditClicked)
     }
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -35,12 +36,20 @@ class TaskListAdapter(
         private val taskCompletedAtView: TextView = itemView.findViewById(R.id.task_completed_at)
         private val checkBox: CheckBox = itemView.findViewById(R.id.checkBox)
         private val deleteButton: ImageButton = itemView.findViewById(R.id.delete_button)
+        private val editButton: ImageButton = itemView.findViewById(R.id.edit_button)
+        private val taskTextLayout: View = itemView.findViewById(R.id.task_text_layout)
 
-        fun bind(task: Task, onTaskCheckedChanged: (Task, Boolean) -> Unit, onTaskDeleteClicked: (Task) -> Unit) {
+        fun bind(
+            task: Task,
+            onTaskCheckedChanged: (Task, Boolean) -> Unit,
+            onTaskDeleteClicked: (Task) -> Unit,
+            onTaskEditClicked: (Task) -> Unit
+        ) {
             taskTitleView.text = task.title
             taskPointsView.text = "${task.points} points"
             checkBox.contentDescription = "Complete task: ${task.title}"
             deleteButton.contentDescription = "Delete task: ${task.title}"
+            editButton.contentDescription = "Edit task: ${task.title}"
 
             if (task.isCompleted && task.completedAt != null) {
                 taskCompletedAtView.visibility = View.VISIBLE
@@ -61,6 +70,14 @@ class TaskListAdapter(
 
             deleteButton.setOnClickListener {
                 onTaskDeleteClicked(task)
+            }
+
+            editButton.setOnClickListener {
+                onTaskEditClicked(task)
+            }
+
+            taskTextLayout.setOnClickListener {
+                onTaskEditClicked(task)
             }
         }
 

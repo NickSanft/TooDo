@@ -11,6 +11,7 @@
         android:layout_height="wrap_content" />
 
     <LinearLayout
+        android:id="@+id/task_text_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -35,6 +36,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0 points" />
+
+    <ImageButton
+        android:id="@+id/edit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_edit"
+        android:contentDescription="Edit Task" />
 
     <ImageButton
         android:id="@+id/delete_button"

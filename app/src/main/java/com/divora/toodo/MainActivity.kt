@@ -12,7 +12,6 @@ import androidx.viewpager2.widget.ViewPager2
 import com.divora.toodo.databinding.ActivityMainBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayoutMediator
-import com.google.android.material.color.DynamicColors
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,7 +21,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DynamicColors.applyToActivityIfAvailable(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

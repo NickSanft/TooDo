@@ -42,13 +42,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@android:drawable/ic_menu_edit"
-        android:contentDescription="Edit Task" />
+        android:contentDescription="Edit Task"
+        android:background="?android:attr/selectableItemBackgroundBorderless" />
 
     <ImageButton
         android:id="@+id/delete_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@android:drawable/ic_delete"
-        android:contentDescription="Delete Task" />
+        android:contentDescription="Delete Task"
+        android:background="?android:attr/selectableItemBackgroundBorderless" />
 
 </LinearLayout>

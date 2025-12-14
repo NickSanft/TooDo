@@ -67,6 +67,10 @@ class PrizesFragment : Fragment(), FabClickHandler {
         showAddPrizeDialog()
     }
 
+    private fun sanitizeInput(input: String): String {
+        return input.replace("\r", "").replace("\n", "")
+    }
+
     private fun showAddPrizeDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_prize, null)
         val prizeNameInput = dialogView.findViewById<EditText>(R.id.prize_name_input)
@@ -76,7 +80,7 @@ class PrizesFragment : Fragment(), FabClickHandler {
             .setTitle("Add New Prize")
             .setView(dialogView)
             .setPositiveButton("Add") { _, _ ->
-                val name = prizeNameInput.text.toString()
+                val name = sanitizeInput(prizeNameInput.text.toString())
                 val cost = prizeCostInput.text.toString().toIntOrNull() ?: 0
                 if (name.isNotBlank()) {
                     val newPrize = Prize(name = name, cost = cost)
@@ -99,7 +103,7 @@ class PrizesFragment : Fragment(), FabClickHandler {
             .setTitle("Edit Prize")
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
-                val name = prizeNameInput.text.toString()
+                val name = sanitizeInput(prizeNameInput.text.toString())
                 val cost = prizeCostInput.text.toString().toIntOrNull() ?: 0
                 if (name.isNotBlank()) {
                     val updatedPrize = prize.copy(name = name, cost = cost)

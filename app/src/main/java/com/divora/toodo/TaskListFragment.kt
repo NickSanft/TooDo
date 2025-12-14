@@ -65,6 +65,10 @@ class TaskListFragment : Fragment(), FabClickHandler {
         showAddTaskDialog()
     }
 
+    private fun sanitizeInput(input: String): String {
+        return input.replace("\r", "").replace("\n", "")
+    }
+
     private fun showAddTaskDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_task, null)
         val taskTitleInput = dialogView.findViewById<EditText>(R.id.task_title_input)
@@ -73,7 +77,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
             .setTitle("Add New Task")
             .setView(dialogView)
             .setPositiveButton("Add") { _, _ ->
-                val title = taskTitleInput.text.toString()
+                val title = sanitizeInput(taskTitleInput.text.toString())
                 val difficulty = when (dialogView.findViewById<RadioGroup>(R.id.difficulty_radio_group).checkedRadioButtonId) {
                     R.id.easy_button -> "Easy"
                     R.id.medium_button -> "Medium"
@@ -106,7 +110,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
             .setTitle("Edit Task")
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
-                val title = taskTitleInput.text.toString()
+                val title = sanitizeInput(taskTitleInput.text.toString())
                 val difficulty = when (difficultyRadioGroup.checkedRadioButtonId) {
                     R.id.easy_button -> "Easy"
                     R.id.medium_button -> "Medium"

@@ -51,7 +51,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
                 if (isCompleted) {
                     adapter.submitList(filteredTasks.sortedByDescending { it.completedAt })
                 } else {
-                    adapter.submitList(filteredTasks)
+                    adapter.submitList(filteredTasks.sortedBy { it.priority })
                 }
             }
         }
@@ -72,6 +72,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
     private fun showAddTaskDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_task, null)
         val taskTitleInput = dialogView.findViewById<EditText>(R.id.task_title_input)
+        val priorityRadioGroup = dialogView.findViewById<RadioGroup>(R.id.priority_radio_group)
 
         AlertDialog.Builder(requireContext())
             .setTitle("Add New Task")
@@ -88,7 +89,12 @@ class TaskListFragment : Fragment(), FabClickHandler {
                     "Medium" -> 2
                     else -> 5
                 }
-                taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points))
+                val priority = when (priorityRadioGroup.checkedRadioButtonId) {
+                    R.id.high_priority_button -> 1
+                    R.id.medium_priority_button -> 2
+                    else -> 3
+                }
+                taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points, priority = priority))
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -98,12 +104,18 @@ class TaskListFragment : Fragment(), FabClickHandler {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_task, null)
         val taskTitleInput = dialogView.findViewById<EditText>(R.id.task_title_input)
         val difficultyRadioGroup = dialogView.findViewById<RadioGroup>(R.id.difficulty_radio_group)
+        val priorityRadioGroup = dialogView.findViewById<RadioGroup>(R.id.priority_radio_group)
 
         taskTitleInput.setText(task.title)
         when (task.difficulty) {
             "Easy" -> difficultyRadioGroup.check(R.id.easy_button)
             "Medium" -> difficultyRadioGroup.check(R.id.medium_button)
             "Hard" -> difficultyRadioGroup.check(R.id.hard_button)
+        }
+        when (task.priority) {
+            1 -> priorityRadioGroup.check(R.id.high_priority_button)
+            2 -> priorityRadioGroup.check(R.id.medium_priority_button)
+            3 -> priorityRadioGroup.check(R.id.low_priority_button)
         }
 
         AlertDialog.Builder(requireContext())
@@ -121,7 +133,12 @@ class TaskListFragment : Fragment(), FabClickHandler {
                     "Medium" -> 2
                     else -> 5
                 }
-                taskViewModel.update(task.copy(title = title, difficulty = difficulty, points = points))
+                val priority = when (priorityRadioGroup.checkedRadioButtonId) {
+                    R.id.high_priority_button -> 1
+                    R.id.medium_priority_button -> 2
+                    else -> 3
+                }
+                taskViewModel.update(task.copy(title = title, difficulty = difficulty, points = points, priority = priority))
             }
             .setNegativeButton("Cancel", null)
             .show()

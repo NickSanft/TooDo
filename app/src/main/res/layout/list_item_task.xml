@@ -27,6 +27,12 @@
             android:text="Task Title" />
 
         <TextView
+            android:id="@+id/task_priority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Medium Priority" />
+
+        <TextView
             android:id="@+id/task_completed_at"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

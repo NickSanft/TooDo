@@ -52,6 +52,7 @@ class TaskDeletionTest {
     fun testTaskDeletion() {
         // Create a task to delete from the active tab
         device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.hasObject(By.text("Add New Task")), LAUNCH_TIMEOUT)
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Delete this active task"
         device.findObject(By.text("Hard (5 points)")).click()
         device.findObject(By.text("Add")).click()
@@ -65,6 +66,7 @@ class TaskDeletionTest {
 
         // Create a task to cancel deletion from the active tab
         device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.hasObject(By.text("Add New Task")), LAUNCH_TIMEOUT)
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Don't delete this active task"
         device.findObject(By.text("Hard (5 points)")).click()
         device.findObject(By.text("Add")).click()
@@ -78,6 +80,7 @@ class TaskDeletionTest {
 
         // Create a task to delete from the completed tab
         device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.hasObject(By.text("Add New Task")), LAUNCH_TIMEOUT)
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Delete this completed task"
         device.findObject(By.text("Hard (5 points)")).click()
         device.findObject(By.text("Add")).click()

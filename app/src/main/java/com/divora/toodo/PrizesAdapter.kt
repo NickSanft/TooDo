@@ -3,7 +3,6 @@ package com.divora.toodo
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
@@ -31,7 +30,7 @@ class PrizesAdapter(
     class PrizeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val prizeNameView: TextView = itemView.findViewById(R.id.prize_name)
         private val prizeCostView: TextView = itemView.findViewById(R.id.prize_cost)
-        private val redeemButton: Button = itemView.findViewById(R.id.redeem_button)
+        private val redeemButton: ImageButton = itemView.findViewById(R.id.redeem_button)
         private val editButton: ImageButton = itemView.findViewById(R.id.edit_button)
         private val deleteButton: ImageButton = itemView.findViewById(R.id.delete_button)
 

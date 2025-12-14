@@ -11,6 +11,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:ellipsize="end"
+        android:singleLine="true"
         android:text="Prize Name" />
 
     <TextView
@@ -20,11 +22,13 @@
         android:layout_marginEnd="8dp"
         android:text="0 points" />
 
-    <Button
+    <ImageButton
         android:id="@+id/redeem_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Redeem" />
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Redeem Prize"
+        android:src="@android:drawable/btn_star" />
 
     <ImageButton
         android:id="@+id/edit_button"

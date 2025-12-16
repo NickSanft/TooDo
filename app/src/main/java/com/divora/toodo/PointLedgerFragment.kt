@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,8 +36,15 @@ class PointLedgerFragment : Fragment() {
         binding.ledgerList.adapter = adapter
         binding.ledgerList.layoutManager = LinearLayoutManager(context)
 
-        pointLedgerViewModel.allLedgerEntries.observe(viewLifecycleOwner) {
-            entries -> adapter.submitList(entries)
+        pointLedgerViewModel.allLedgerEntries.observe(viewLifecycleOwner) { entries ->
+            if (entries.isNullOrEmpty()) {
+                binding.ledgerList.isVisible = false
+                binding.emptyListText.isVisible = true
+            } else {
+                binding.ledgerList.isVisible = true
+                binding.emptyListText.isVisible = false
+                adapter.submitList(entries)
+            }
         }
     }
 

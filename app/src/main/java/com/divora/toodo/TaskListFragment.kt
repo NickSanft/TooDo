@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,22 +45,35 @@ class TaskListFragment : Fragment(), FabClickHandler {
             { task -> showEditTaskDialog(task) }
         )
 
-        view.findViewById<RecyclerView>(R.id.task_list).adapter = adapter
-        view.findViewById<RecyclerView>(R.id.task_list).layoutManager = LinearLayoutManager(context)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.task_list)
+        val emptyListTextView = view.findViewById<TextView>(R.id.empty_list_text)
+
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(context)
 
         taskViewModel.allTasks.observe(viewLifecycleOwner) { tasks ->
             tasks?.let {
                 val filteredTasks = it.filter { it.isCompleted == isCompleted }
-                if (isCompleted) {
-                    adapter.submitList(filteredTasks.sortedByDescending { it.completedAt })
+
+                if (filteredTasks.isEmpty()) {
+                    recyclerView.isVisible = false
+                    emptyListTextView.isVisible = true
+                    val emptyText = if (isCompleted) "No completed tasks yet!" else "No active tasks yet!"
+                    emptyListTextView.text = emptyText
                 } else {
-                    adapter.submitList(filteredTasks.sortedBy { it.priority })
+                    recyclerView.isVisible = true
+                    emptyListTextView.isVisible = false
+                    if (isCompleted) {
+                        adapter.submitList(filteredTasks.sortedByDescending { it.completedAt })
+                    } else {
+                        adapter.submitList(filteredTasks.sortedBy { it.priority })
+                    }
                 }
             }
         }
 
         taskViewModel.totalPoints.observe(viewLifecycleOwner) {
-            points -> view.findViewById<android.widget.TextView>(R.id.total_points_text).text = "Total Points: ${points ?: 0}"
+            points -> view.findViewById<TextView>(R.id.total_points_text).text = "Total Points: ${points ?: 0}"
         }
     }
 

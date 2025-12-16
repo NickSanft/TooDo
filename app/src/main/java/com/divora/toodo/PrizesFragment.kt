@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -56,9 +57,15 @@ class PrizesFragment : Fragment(), FabClickHandler {
             points -> binding.totalPointsText.text = "Total Points: ${points ?: 0}"
         }
 
-        prizesViewModel.prizes.observe(viewLifecycleOwner) {
-            prizes ->
-            adapter.submitList(prizes)
+        prizesViewModel.prizes.observe(viewLifecycleOwner) { prizes ->
+            if (prizes.isNullOrEmpty()) {
+                binding.prizesList.isVisible = false
+                binding.emptyListText.isVisible = true
+            } else {
+                binding.prizesList.isVisible = true
+                binding.emptyListText.isVisible = false
+                adapter.submitList(prizes)
+            }
         }
     }
 

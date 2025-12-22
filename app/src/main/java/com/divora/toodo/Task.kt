@@ -11,6 +11,7 @@ data class Task(
     val difficulty: String,
     val points: Int,
     val priority: Int = 2, // 1 = High, 2 = Medium, 3 = Low
+    val category: String = "General",
     val isCompleted: Boolean = false,
     val completedAt: Long? = null
 )

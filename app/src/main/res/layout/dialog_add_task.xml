@@ -1,76 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/task_title_input"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Task Title" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Difficulty" />
+        <EditText
+            android:id="@+id/task_title_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Task Title" />
 
-    <RadioGroup
-        android:id="@+id/difficulty_radio_group"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <RadioButton
-            android:id="@+id/easy_button"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Easy (1 point)" />
+            android:layout_marginTop="16dp"
+            android:text="Category" />
 
-        <RadioButton
-            android:id="@+id/medium_button"
+        <Spinner
+            android:id="@+id/category_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Medium (2 points)" />
+            android:layout_marginTop="16dp"
+            android:text="Difficulty" />
 
-        <RadioButton
-            android:id="@+id/hard_button"
+        <RadioGroup
+            android:id="@+id/difficulty_radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/easy_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Easy (1 point)" />
+
+            <RadioButton
+                android:id="@+id/medium_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Medium (2 points)" />
+
+            <RadioButton
+                android:id="@+id/hard_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hard (5 points)" />
+
+        </RadioGroup>
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hard (5 points)" />
+            android:layout_marginTop="16dp"
+            android:text="Priority" />
 
-    </RadioGroup>
+        <RadioGroup
+            android:id="@+id/priority_radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Priority" />
+            <RadioButton
+                android:id="@+id/high_priority_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="High" />
 
-    <RadioGroup
-        android:id="@+id/priority_radio_group"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+            <RadioButton
+                android:id="@+id/medium_priority_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Medium" />
 
-        <RadioButton
-            android:id="@+id/high_priority_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="High" />
+            <RadioButton
+                android:id="@+id/low_priority_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Low" />
 
-        <RadioButton
-            android:id="@+id/medium_priority_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Medium" />
+        </RadioGroup>
 
-        <RadioButton
-            android:id="@+id/low_priority_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Low" />
-
-    </RadioGroup>
-
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>

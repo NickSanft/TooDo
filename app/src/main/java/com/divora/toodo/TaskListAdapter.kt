@@ -32,6 +32,7 @@ class TaskListAdapter(
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val taskTitleView: TextView = itemView.findViewById(R.id.task_title)
+        private val taskCategoryView: TextView = itemView.findViewById(R.id.task_category)
         private val taskPriorityView: TextView = itemView.findViewById(R.id.task_priority)
         private val taskPointsView: TextView = itemView.findViewById(R.id.task_points)
         private val taskCompletedAtView: TextView = itemView.findViewById(R.id.task_completed_at)
@@ -47,6 +48,7 @@ class TaskListAdapter(
             onTaskEditClicked: (Task) -> Unit
         ) {
             taskTitleView.text = task.title
+            taskCategoryView.text = task.category
             taskPointsView.text = "${task.points} points"
             taskPriorityView.text = when (task.priority) {
                 1 -> "High Priority"

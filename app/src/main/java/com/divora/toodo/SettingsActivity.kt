@@ -24,9 +24,10 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.disableConfirmationsSwitch.isChecked = sharedPreferences.getBoolean("disable_confirmations", false)
 
-        when (AppCompatDelegate.getDefaultNightMode()) {
+        when (sharedPreferences.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)) {
             AppCompatDelegate.MODE_NIGHT_NO -> binding.lightThemeButton.isChecked = true
             AppCompatDelegate.MODE_NIGHT_YES -> binding.darkThemeButton.isChecked = true
+            else -> {} // Default or system
         }
 
         binding.disableConfirmationsSwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -34,10 +35,13 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.themeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.light_theme_button -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                R.id.dark_theme_button -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            val mode = when (checkedId) {
+                R.id.light_theme_button -> AppCompatDelegate.MODE_NIGHT_NO
+                R.id.dark_theme_button -> AppCompatDelegate.MODE_NIGHT_YES
+                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             }
+            AppCompatDelegate.setDefaultNightMode(mode)
+            sharedPreferences.edit().putInt("night_mode", mode).apply()
         }
     }
 

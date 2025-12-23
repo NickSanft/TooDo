@@ -5,6 +5,15 @@
     <string name="light">Light</string>
     <string name="dark">Dark</string>
     <string name="disable_confirmation_dialogs">Disable confirmation dialogs</string>
+    <string name="sound_effects">Sound Effects</string>
+    <string name="vibration">Vibration</string>
+    <string name="data_management">Data Management</string>
+    <string name="clear_all_data">Clear All Data</string>
+    <string name="clear_data_confirmation_title">Clear All Data</string>
+    <string name="clear_data_confirmation_message">Are you sure you want to delete all tasks, prizes, and point history? This action cannot be undone.</string>
+    <string name="clear">Clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="data_cleared">All data cleared</string>
 
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>

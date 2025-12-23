@@ -1,6 +1,8 @@
 package com.divora.toodo
 
+import android.content.Context
 import android.graphics.Color
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +33,7 @@ class PrizesFragment : Fragment(), FabClickHandler {
     private val prizesViewModel: PrizesViewModel by viewModels()
     private val pointLedgerViewModel: PointLedgerViewModel by viewModels()
     private lateinit var adapter: PrizesAdapter
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -161,6 +164,8 @@ class PrizesFragment : Fragment(), FabClickHandler {
                     pointLedgerViewModel.insert(ledgerEntry)
 
                     prizesViewModel.removePrize(prize)
+                    
+                    playSoundEffect()
 
                     if (!isTestMode()) {
                         // Trigger the confetti animation
@@ -181,6 +186,21 @@ class PrizesFragment : Fragment(), FabClickHandler {
                 .show()
         }
     }
+    
+    private fun playSoundEffect() {
+        val context = context ?: return
+        val sharedPreferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("sound_effects", false)) {
+             try {
+                 // Using system notification sound as a placeholder since we don't have custom raw assets
+                val notification = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)
+                val r = android.media.RingtoneManager.getRingtone(context, notification)
+                r.play()
+             } catch (e: Exception) {
+                 e.printStackTrace()
+             }
+        }
+    }
 
     private fun isTestMode(): Boolean {
         return try {
@@ -194,5 +214,7 @@ class PrizesFragment : Fragment(), FabClickHandler {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 }

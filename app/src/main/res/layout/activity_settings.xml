@@ -15,45 +15,70 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/app_bar_layout"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_below="@id/app_bar_layout">
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/disable_confirmations_switch"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/disable_confirmation_dialogs" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/theme"
-            android:textAppearance="?attr/textAppearanceHeadline6" />
-
-        <RadioGroup
-            android:id="@+id/theme_radio_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <RadioButton
-                android:id="@+id/light_theme_button"
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/disable_confirmations_switch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/light" />
+                android:text="@string/disable_confirmation_dialogs" />
 
-            <RadioButton
-                android:id="@+id/dark_theme_button"
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/sound_effects_switch"
                 android:layout_width="match_parent"
-                android.layout_height="wrap_content"
-                android:text="@string/dark" />
+                android:layout_height="wrap_content"
+                android:text="@string/sound_effects" />
 
-        </RadioGroup>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/theme"
+                android:textAppearance="?attr/textAppearanceHeadline6" />
 
-    </LinearLayout>
+            <RadioGroup
+                android:id="@+id/theme_radio_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
+                <RadioButton
+                    android:id="@+id/light_theme_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/light" />
+
+                <RadioButton
+                    android:id="@+id/dark_theme_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dark" />
+
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/data_management"
+                android:textAppearance="?attr/textAppearanceHeadline6" />
+
+            <Button
+                android:id="@+id/clear_data_button"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/clear_all_data"
+                android:textColor="?attr/colorError" />
+
+        </LinearLayout>
+    </ScrollView>
 </RelativeLayout>

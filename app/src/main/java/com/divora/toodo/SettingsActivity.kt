@@ -3,13 +3,21 @@ package com.divora.toodo
 import android.content.Context
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.divora.toodo.databinding.ActivitySettingsBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
+    private val taskViewModel: TaskViewModel by viewModels()
+    private val prizesViewModel: PrizesViewModel by viewModels()
+    private val pointLedgerViewModel: PointLedgerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +31,7 @@ class SettingsActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
 
         binding.disableConfirmationsSwitch.isChecked = sharedPreferences.getBoolean("disable_confirmations", false)
+        binding.soundEffectsSwitch.isChecked = sharedPreferences.getBoolean("sound_effects", false)
 
         when (sharedPreferences.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)) {
             AppCompatDelegate.MODE_NIGHT_NO -> binding.lightThemeButton.isChecked = true
@@ -34,6 +43,10 @@ class SettingsActivity : AppCompatActivity() {
             sharedPreferences.edit().putBoolean("disable_confirmations", isChecked).apply()
         }
 
+        binding.soundEffectsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            sharedPreferences.edit().putBoolean("sound_effects", isChecked).apply()
+        }
+
         binding.themeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             val mode = when (checkedId) {
                 R.id.light_theme_button -> AppCompatDelegate.MODE_NIGHT_NO
@@ -43,6 +56,24 @@ class SettingsActivity : AppCompatActivity() {
             AppCompatDelegate.setDefaultNightMode(mode)
             sharedPreferences.edit().putInt("night_mode", mode).apply()
         }
+
+        binding.clearDataButton.setOnClickListener {
+            showClearDataConfirmationDialog()
+        }
+    }
+
+    private fun showClearDataConfirmationDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.clear_data_confirmation_title)
+            .setMessage(R.string.clear_data_confirmation_message)
+            .setPositiveButton(R.string.clear) { _, _ ->
+                taskViewModel.deleteAll()
+                prizesViewModel.deleteAll()
+                pointLedgerViewModel.deleteAll()
+                Toast.makeText(this, R.string.data_cleared, Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

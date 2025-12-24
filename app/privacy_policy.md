@@ -1,4 +1,4 @@
-# Privacy Policy for Broken Calculator
+# Privacy Policy for TooDo
 
 Last updated: December 23rd, 2025
 

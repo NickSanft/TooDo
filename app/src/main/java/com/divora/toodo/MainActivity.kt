@@ -2,6 +2,7 @@ package com.divora.toodo
 
 import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -95,6 +96,20 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    fun playSoundEffect() {
+        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("sound_effects", false)) {
+            try {
+                // Using system notification sound as a placeholder
+                val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val r = RingtoneManager.getRingtone(applicationContext, notification)
+                r.play()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import org.junit.After
@@ -89,7 +90,8 @@ class PrizesTest {
         device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
 
         // Click the "Edit" button
-        device.wait(Until.findObject(By.res(packageName, "edit_button")), LAUNCH_TIMEOUT).click()
+        val prizeItem = device.wait(Until.findObject(By.text("Custom Prize")), LAUNCH_TIMEOUT)
+        prizeItem.click() // Click to edit
 
         // Verify the "Edit Prize" dialog is shown
         device.wait(Until.hasObject(By.text("Edit Prize")), LAUNCH_TIMEOUT)
@@ -118,12 +120,9 @@ class PrizesTest {
         device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
         device.waitForIdle()
 
-        // Click the "Delete" button
-        device.wait(Until.findObject(By.res(packageName, "delete_button")), LAUNCH_TIMEOUT).click()
-        device.waitForIdle()
-
-        // Confirm the deletion
-        device.wait(Until.findObject(By.text("Delete")), LAUNCH_TIMEOUT).click()
+        // Swipe left to delete
+        val prizeToDelete = device.wait(Until.findObject(By.text("Custom Prize")), LAUNCH_TIMEOUT)
+        prizeToDelete.swipe(Direction.LEFT, 1.0f)
         device.waitForIdle()
 
         // Verify the prize is removed from the list

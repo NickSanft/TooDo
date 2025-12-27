@@ -4,8 +4,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +15,6 @@ import java.util.Locale
 
 class TaskListAdapter(
     private val onTaskCheckedChanged: (Task, Boolean) -> Unit,
-    private val onTaskDeleteClicked: (Task) -> Unit,
     private val onTaskEditClicked: (Task) -> Unit
 ) :
     ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TasksComparator()) {
@@ -27,7 +26,7 @@ class TaskListAdapter(
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val current = getItem(position)
-        holder.bind(current, onTaskCheckedChanged, onTaskDeleteClicked, onTaskEditClicked)
+        holder.bind(current, onTaskCheckedChanged, onTaskEditClicked)
     }
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -37,36 +36,49 @@ class TaskListAdapter(
         private val taskPointsView: TextView = itemView.findViewById(R.id.task_points)
         private val taskCompletedAtView: TextView = itemView.findViewById(R.id.task_completed_at)
         private val checkBox: CheckBox = itemView.findViewById(R.id.checkBox)
-        private val deleteButton: ImageButton = itemView.findViewById(R.id.delete_button)
-        private val editButton: ImageButton = itemView.findViewById(R.id.edit_button)
         private val taskTextLayout: View = itemView.findViewById(R.id.task_text_layout)
 
         fun bind(
             task: Task,
             onTaskCheckedChanged: (Task, Boolean) -> Unit,
-            onTaskDeleteClicked: (Task) -> Unit,
             onTaskEditClicked: (Task) -> Unit
         ) {
             taskTitleView.text = task.title
             taskCategoryView.text = task.category
             taskPointsView.text = "${task.points} points"
-            taskPriorityView.text = when (task.priority) {
+            
+            val priorityText = when (task.priority) {
                 1 -> "High Priority"
                 2 -> "Medium Priority"
                 else -> "Low Priority"
             }
+            taskPriorityView.text = priorityText
+
+            val priorityColor = when (task.priority) {
+                1 -> R.color.priority_high
+                2 -> R.color.priority_medium
+                else -> R.color.priority_low
+            }
+            taskPriorityView.setTextColor(ContextCompat.getColor(itemView.context, priorityColor))
+
             checkBox.contentDescription = "Complete task: ${task.title}"
-            deleteButton.contentDescription = "Delete task: ${task.title}"
-            editButton.contentDescription = "Edit task: ${task.title}"
 
             if (task.isCompleted && task.completedAt != null) {
                 taskCompletedAtView.visibility = View.VISIBLE
                 taskPriorityView.visibility = View.GONE
-                val sdf = SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.getDefault())
-                taskCompletedAtView.text = "Completed at: ${sdf.format(Date(task.completedAt))}"
+                val sdf = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
+                taskCompletedAtView.text = "Completed: ${sdf.format(Date(task.completedAt))}"
+                
+                // Strike through title if completed
+                taskTitleView.paintFlags = taskTitleView.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                taskTitleView.alpha = 0.6f
             } else {
                 taskCompletedAtView.visibility = View.GONE
                 taskPriorityView.visibility = View.VISIBLE
+                
+                // Remove strike through
+                taskTitleView.paintFlags = taskTitleView.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                taskTitleView.alpha = 1.0f
             }
 
             // Remove the listener before setting the checked state to prevent unwanted triggers.
@@ -76,14 +88,6 @@ class TaskListAdapter(
             // Re-add the listener for user interactions.
             checkBox.setOnCheckedChangeListener { _, isChecked ->
                 onTaskCheckedChanged(task, isChecked)
-            }
-
-            deleteButton.setOnClickListener {
-                onTaskDeleteClicked(task)
-            }
-
-            editButton.setOnClickListener {
-                onTaskEditClicked(task)
             }
 
             taskTextLayout.setOnClickListener {

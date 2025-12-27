@@ -64,4 +64,9 @@
     <color name="md_theme_dark_surfaceTint">#9ECAFF</color>
     <color name="md_theme_dark_outlineVariant">#43474E</color>
     <color name="md_theme_dark_scrim">#000000</color>
+
+    <!-- Priority Colors -->
+    <color name="priority_high">#D32F2F</color>
+    <color name="priority_medium">#F57C00</color>
+    <color name="priority_low">#388E3C</color>
 </resources>

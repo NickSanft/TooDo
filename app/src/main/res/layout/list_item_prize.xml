@@ -6,44 +6,44 @@
     android:orientation="horizontal"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/prize_name"
+    <LinearLayout
+        android:id="@+id/prize_text_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:text="Prize Name" />
+        android:orientation="vertical"
+        android:background="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
 
-    <TextView
-        android:id="@+id/prize_cost"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:text="0 points" />
+        <TextView
+            android:id="@+id/prize_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="Prize Name"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-    <ImageButton
+        <TextView
+            android:id="@+id/prize_cost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50 points"
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray" />
+
+    </LinearLayout>
+
+    <Button
         android:id="@+id/redeem_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Redeem Prize"
-        android:src="@android:drawable/btn_star" />
-
-    <ImageButton
-        android:id="@+id/edit_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Edit Prize"
-        android:src="@android:drawable/ic_menu_edit" />
-
-    <ImageButton
-        android:id="@+id/delete_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Delete Prize"
-        android:src="@android:drawable/ic_delete" />
+        android:text="Redeem"
+        android:textSize="12sp"
+        style="@style/Widget.MaterialComponents.Button.TextButton" />
 
 </LinearLayout>

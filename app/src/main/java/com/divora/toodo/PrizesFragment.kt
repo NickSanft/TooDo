@@ -8,13 +8,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.divora.toodo.databinding.FragmentPrizesBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -49,12 +53,13 @@ class PrizesFragment : Fragment(), FabClickHandler {
 
         adapter = PrizesAdapter(
             onRedeemClicked = { prize -> showRedeemConfirmationDialog(prize) },
-            onEditClicked = { prize -> showEditPrizeDialog(prize) },
-            onDeleteClicked = { prize -> showDeleteConfirmationDialog(prize) }
+            onEditClicked = { prize -> showEditPrizeDialog(prize) }
         )
 
         binding.prizesList.adapter = adapter
         binding.prizesList.layoutManager = LinearLayoutManager(context)
+
+        setupSwipeToDelete(binding.prizesList)
 
         taskViewModel.totalPoints.observe(viewLifecycleOwner) {
             points -> binding.totalPointsText.text = "Total Points: ${points ?: 0}"
@@ -72,12 +77,36 @@ class PrizesFragment : Fragment(), FabClickHandler {
         }
     }
 
+    private fun setupSwipeToDelete(recyclerView: RecyclerView) {
+        val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val adapter = recyclerView.adapter as PrizesAdapter
+                val prize = adapter.currentList[position]
+
+                prizesViewModel.removePrize(prize)
+
+                Snackbar.make(recyclerView, "Prize deleted", Snackbar.LENGTH_LONG)
+                    .setAction("Undo") {
+                        prizesViewModel.addPrize(prize.copy(id = 0))
+                    }
+                    .show()
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+    }
+
     override fun onFabClick() {
         showAddPrizeDialog()
     }
 
     private fun sanitizeInput(input: String): String {
-        return input.replace("\r", "").replace("\n", "")
+        return input.replace("\r", "").replace("\n", "").trim()
     }
 
     private fun showAddPrizeDialog() {
@@ -85,19 +114,29 @@ class PrizesFragment : Fragment(), FabClickHandler {
         val prizeNameInput = dialogView.findViewById<EditText>(R.id.prize_name_input)
         val prizeCostInput = dialogView.findViewById<EditText>(R.id.prize_cost_input)
 
-        MaterialAlertDialogBuilder(requireContext())
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle("Add New Prize")
             .setView(dialogView)
-            .setPositiveButton("Add") { _, _ ->
+            .setPositiveButton("Add", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
                 val name = sanitizeInput(prizeNameInput.text.toString())
                 val cost = prizeCostInput.text.toString().toIntOrNull() ?: 0
-                if (name.isNotBlank()) {
+                
+                if (name.isBlank()) {
+                    prizeNameInput.error = "Name cannot be empty"
+                } else {
                     val newPrize = Prize(name = name, cost = cost)
                     prizesViewModel.addPrize(newPrize)
+                    dialog.dismiss()
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun showEditPrizeDialog(prize: Prize) {
@@ -108,30 +147,29 @@ class PrizesFragment : Fragment(), FabClickHandler {
         prizeNameInput.setText(prize.name)
         prizeCostInput.setText(prize.cost.toString())
 
-        MaterialAlertDialogBuilder(requireContext())
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle("Edit Prize")
             .setView(dialogView)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton("Save", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
                 val name = sanitizeInput(prizeNameInput.text.toString())
                 val cost = prizeCostInput.text.toString().toIntOrNull() ?: 0
-                if (name.isNotBlank()) {
+                
+                if (name.isBlank()) {
+                    prizeNameInput.error = "Name cannot be empty"
+                } else {
                     val updatedPrize = prize.copy(name = name, cost = cost)
                     prizesViewModel.updatePrize(updatedPrize)
+                    dialog.dismiss()
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun showDeleteConfirmationDialog(prize: Prize) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Delete Prize")
-            .setMessage("Are you sure you want to delete \"${prize.name}\"?")
-            .setPositiveButton("Delete") { _, _ ->
-                prizesViewModel.removePrize(prize)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun showRedeemConfirmationDialog(prize: Prize) {

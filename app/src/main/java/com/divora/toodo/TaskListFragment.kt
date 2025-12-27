@@ -14,8 +14,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -45,7 +47,6 @@ class TaskListFragment : Fragment(), FabClickHandler {
                     (activity as MainActivity).showUncheckConfirmationDialog(task)
                 }
             },
-            { task -> (activity as MainActivity).showDeleteConfirmationDialog(task) },
             { task -> showEditTaskDialog(task) }
         )
 
@@ -55,6 +56,8 @@ class TaskListFragment : Fragment(), FabClickHandler {
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(context)
+
+        setupSwipeToDelete(recyclerView)
 
         // Set up filter spinner
         val filterCategories = listOf("All") + categories
@@ -84,6 +87,30 @@ class TaskListFragment : Fragment(), FabClickHandler {
         taskViewModel.totalPoints.observe(viewLifecycleOwner) {
             points -> view.findViewById<TextView>(R.id.total_points_text).text = "Total Points: ${points ?: 0}"
         }
+    }
+
+    private fun setupSwipeToDelete(recyclerView: RecyclerView) {
+        val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val adapter = recyclerView.adapter as TaskListAdapter
+                val task = adapter.currentList[position]
+
+                taskViewModel.delete(task)
+
+                Snackbar.make(recyclerView, "Task deleted", Snackbar.LENGTH_LONG)
+                    .setAction("Undo") {
+                        taskViewModel.insert(task.copy(id = 0))
+                    }
+                    .show()
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
     private fun updateTaskList(
@@ -119,7 +146,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
     }
 
     private fun sanitizeInput(input: String): String {
-        return input.replace("\r", "").replace("\n", "")
+        return input.replace("\r", "").replace("\n", "").trim()
     }
 
     private fun showAddTaskDialog() {
@@ -127,36 +154,48 @@ class TaskListFragment : Fragment(), FabClickHandler {
         val taskTitleInput = dialogView.findViewById<EditText>(R.id.task_title_input)
         val priorityRadioGroup = dialogView.findViewById<RadioGroup>(R.id.priority_radio_group)
         val categorySpinner = dialogView.findViewById<Spinner>(R.id.category_spinner)
+        val difficultyRadioGroup = dialogView.findViewById<RadioGroup>(R.id.difficulty_radio_group)
 
         val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         categorySpinner.adapter = spinnerAdapter
 
-        AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Add New Task")
             .setView(dialogView)
-            .setPositiveButton("Add") { _, _ ->
-                val title = sanitizeInput(taskTitleInput.text.toString())
-                val difficulty = when (dialogView.findViewById<RadioGroup>(R.id.difficulty_radio_group).checkedRadioButtonId) {
-                    R.id.easy_button -> "Easy"
-                    R.id.medium_button -> "Medium"
-                    else -> "Hard"
-                }
-                val points = when (difficulty) {
-                    "Easy" -> 1
-                    "Medium" -> 2
-                    else -> 5
-                }
-                val priority = when (priorityRadioGroup.checkedRadioButtonId) {
-                    R.id.high_priority_button -> 1
-                    R.id.medium_priority_button -> 2
-                    else -> 3
-                }
-                val category = categorySpinner.selectedItem.toString()
-                taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points, priority = priority, category = category))
-            }
+            .setPositiveButton("Add", null)
             .setNegativeButton("Cancel", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
+                val title = sanitizeInput(taskTitleInput.text.toString())
+                if (title.isBlank()) {
+                    taskTitleInput.error = "Title cannot be empty"
+                } else {
+                    val difficulty = when (difficultyRadioGroup.checkedRadioButtonId) {
+                        R.id.easy_button -> "Easy"
+                        R.id.medium_button -> "Medium"
+                        else -> "Hard"
+                    }
+                    val points = when (difficulty) {
+                        "Easy" -> 1
+                        "Medium" -> 2
+                        else -> 5
+                    }
+                    val priority = when (priorityRadioGroup.checkedRadioButtonId) {
+                        R.id.high_priority_button -> 1
+                        R.id.medium_priority_button -> 2
+                        else -> 3
+                    }
+                    val category = categorySpinner.selectedItem.toString()
+                    taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points, priority = priority, category = category))
+                    dialog.dismiss()
+                }
+            }
+        }
+        dialog.show()
     }
 
     private fun showEditTaskDialog(task: Task) {
@@ -183,31 +222,42 @@ class TaskListFragment : Fragment(), FabClickHandler {
             3 -> priorityRadioGroup.check(R.id.low_priority_button)
         }
 
-        AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Edit Task")
             .setView(dialogView)
-            .setPositiveButton("Save") { _, _ ->
-                val title = sanitizeInput(taskTitleInput.text.toString())
-                val difficulty = when (difficultyRadioGroup.checkedRadioButtonId) {
-                    R.id.easy_button -> "Easy"
-                    R.id.medium_button -> "Medium"
-                    else -> "Hard"
-                }
-                val points = when (difficulty) {
-                    "Easy" -> 1
-                    "Medium" -> 2
-                    else -> 5
-                }
-                val priority = when (priorityRadioGroup.checkedRadioButtonId) {
-                    R.id.high_priority_button -> 1
-                    R.id.medium_priority_button -> 2
-                    else -> 3
-                }
-                val category = categorySpinner.selectedItem.toString()
-                taskViewModel.update(task.copy(title = title, difficulty = difficulty, points = points, priority = priority, category = category))
-            }
+            .setPositiveButton("Save", null)
             .setNegativeButton("Cancel", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
+                val title = sanitizeInput(taskTitleInput.text.toString())
+                if (title.isBlank()) {
+                    taskTitleInput.error = "Title cannot be empty"
+                } else {
+                    val difficulty = when (difficultyRadioGroup.checkedRadioButtonId) {
+                        R.id.easy_button -> "Easy"
+                        R.id.medium_button -> "Medium"
+                        else -> "Hard"
+                    }
+                    val points = when (difficulty) {
+                        "Easy" -> 1
+                        "Medium" -> 2
+                        else -> 5
+                    }
+                    val priority = when (priorityRadioGroup.checkedRadioButtonId) {
+                        R.id.high_priority_button -> 1
+                        R.id.medium_priority_button -> 2
+                        else -> 3
+                    }
+                    val category = categorySpinner.selectedItem.toString()
+                    taskViewModel.update(task.copy(title = title, difficulty = difficulty, points = points, priority = priority, category = category))
+                    dialog.dismiss()
+                }
+            }
+        }
+        dialog.show()
     }
 
     companion object {

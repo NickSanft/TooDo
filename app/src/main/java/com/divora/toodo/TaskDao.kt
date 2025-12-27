@@ -26,4 +26,7 @@ interface TaskDao {
 
     @Query("SELECT SUM(points) FROM tasks WHERE isCompleted = 1")
     fun getTotalPoints(): LiveData<Int>
+
+    @Query("DELETE FROM tasks WHERE isCompleted = 1 AND completedAt < :timestamp")
+    suspend fun deleteOldCompletedTasks(timestamp: Long)
 }

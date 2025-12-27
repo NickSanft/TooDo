@@ -1,17 +1,29 @@
 package com.divora.toodo
 
 import android.app.Application
-import android.content.Context
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import dagger.hilt.android.HiltAndroidApp
+import java.util.concurrent.TimeUnit
 
 @HiltAndroidApp
 class TooDoApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val nightMode = sharedPreferences.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        AppCompatDelegate.setDefaultNightMode(nightMode)
+        
+        setupCleanupWorker()
+    }
+
+    private fun setupCleanupWorker() {
+        val cleanupRequest = PeriodicWorkRequestBuilder<CleanupWorker>(1, TimeUnit.DAYS)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "cleanup_worker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            cleanupRequest
+        )
     }
 }

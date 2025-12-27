@@ -3,6 +3,9 @@ package com.divora.toodo
 import android.content.Context
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -36,7 +39,7 @@ class SettingsActivity : AppCompatActivity() {
         when (sharedPreferences.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)) {
             AppCompatDelegate.MODE_NIGHT_NO -> binding.lightThemeButton.isChecked = true
             AppCompatDelegate.MODE_NIGHT_YES -> binding.darkThemeButton.isChecked = true
-            else -> {} // Default or system
+            else -> binding.systemThemeButton.isChecked = true
         }
 
         binding.disableConfirmationsSwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -59,6 +62,55 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.clearDataButton.setOnClickListener {
             showClearDataConfirmationDialog()
+        }
+
+        // Auto-delete Spinner
+        val autoDeleteOptions = listOf("Never", "After 1 week", "After 1 month")
+        val autoDeleteAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, autoDeleteOptions)
+        autoDeleteAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.autoDeleteSpinner.adapter = autoDeleteAdapter
+        
+        val currentAutoDelete = sharedPreferences.getString("auto_delete_option", "Never")
+        binding.autoDeleteSpinner.setSelection(autoDeleteOptions.indexOf(currentAutoDelete))
+
+        binding.autoDeleteSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                sharedPreferences.edit().putString("auto_delete_option", autoDeleteOptions[position]).apply()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        // Default Category Spinner
+        val categories = listOf("General", "Work", "Personal", "Health", "Study", "Finance")
+        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.defaultCategorySpinner.adapter = categoryAdapter
+
+        val currentDefaultCategory = sharedPreferences.getString("default_category", "General")
+        binding.defaultCategorySpinner.setSelection(categories.indexOf(currentDefaultCategory))
+
+        binding.defaultCategorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                sharedPreferences.edit().putString("default_category", categories[position]).apply()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        // Default Difficulty Spinner
+        val difficulties = listOf("Easy", "Medium", "Hard")
+        val difficultyAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, difficulties)
+        difficultyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.defaultDifficultySpinner.adapter = difficultyAdapter
+
+        val currentDefaultDifficulty = sharedPreferences.getString("default_difficulty", "Medium")
+        binding.defaultDifficultySpinner.setSelection(difficulties.indexOf(currentDefaultDifficulty))
+
+        binding.defaultDifficultySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                sharedPreferences.edit().putString("default_difficulty", difficulties[position]).apply()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
 

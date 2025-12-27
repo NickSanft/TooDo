@@ -1,5 +1,6 @@
 package com.divora.toodo
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -159,6 +160,19 @@ class TaskListFragment : Fragment(), FabClickHandler {
         val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         categorySpinner.adapter = spinnerAdapter
+
+        // Load defaults from SharedPreferences
+        val sharedPreferences = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val defaultCategory = sharedPreferences.getString("default_category", "General")
+        val defaultDifficulty = sharedPreferences.getString("default_difficulty", "Medium")
+
+        categorySpinner.setSelection(categories.indexOf(defaultCategory))
+
+        when (defaultDifficulty) {
+            "Easy" -> difficultyRadioGroup.check(R.id.easy_button)
+            "Medium" -> difficultyRadioGroup.check(R.id.medium_button)
+            "Hard" -> difficultyRadioGroup.check(R.id.hard_button)
+        }
 
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Add New Task")

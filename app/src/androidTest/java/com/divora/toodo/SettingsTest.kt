@@ -2,20 +2,27 @@ package com.divora.toodo
 
 import android.content.Context
 import androidx.lifecycle.ViewModelProvider
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import androidx.test.core.app.ActivityScenario
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SettingsTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
     private lateinit var device: UiDevice
     private lateinit var scenario: ActivityScenario<MainActivity>
@@ -24,6 +31,7 @@ class SettingsTest {
 
     @Before
     fun setUp() {
+        hiltRule.inject()
         // Initialize UiDevice instance
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
@@ -51,7 +59,15 @@ class SettingsTest {
     @Test
     fun testThemeChange() {
         // Open settings
-        device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT).click()
+        // UiAutomator can find the overflow menu by description "More options" usually
+        val menuButton = device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT)
+        // If not found, try openOptionsMenu manually or use key event
+        if (menuButton != null) {
+            menuButton.click()
+        } else {
+            device.pressMenu()
+        }
+        
         device.waitForIdle()
         device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
         device.waitForIdle()
@@ -63,7 +79,12 @@ class SettingsTest {
         // Go back and reopen settings
         device.pressBack()
         device.waitForIdle()
-        device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT).click()
+        val menuButton2 = device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT)
+        if (menuButton2 != null) {
+            menuButton2.click()
+        } else {
+            device.pressMenu()
+        }
         device.waitForIdle()
         device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
         device.waitForIdle()
@@ -77,7 +98,12 @@ class SettingsTest {
         device.waitForIdle()
         device.pressBack()
         device.waitForIdle()
-        device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT).click()
+        val menuButton3 = device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT)
+        if (menuButton3 != null) {
+            menuButton3.click()
+        } else {
+            device.pressMenu()
+        }
         device.waitForIdle()
         device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
         device.waitForIdle()

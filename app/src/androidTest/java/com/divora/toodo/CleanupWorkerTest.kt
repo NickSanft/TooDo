@@ -1,28 +1,31 @@
 package com.divora.toodo
 
 import android.content.Context
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.work.ListenableWorker
 import androidx.work.testing.TestListenableWorkerBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import org.junit.Rule
-import javax.inject.Inject
 import dagger.hilt.android.testing.UninstallModules
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Inject
 import javax.inject.Singleton
 import dagger.hilt.android.qualifiers.ApplicationContext
 
@@ -33,6 +36,9 @@ class CleanupWorkerTest {
 
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
+
+    @get:Rule
+    var instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @Inject
     lateinit var taskDao: TaskDao
@@ -57,6 +63,16 @@ class CleanupWorkerTest {
         @Provides
         fun provideTaskDao(database: AppDatabase): TaskDao {
             return database.taskDao()
+        }
+
+        @Provides
+        fun providePrizeDao(database: AppDatabase): PrizeDao {
+            return database.prizeDao()
+        }
+
+        @Provides
+        fun providePointLedgerDao(database: AppDatabase): PointLedgerDao {
+            return database.pointLedgerDao()
         }
     }
 
@@ -119,11 +135,14 @@ class CleanupWorkerTest {
         assertEquals(ListenableWorker.Result.success(), result)
 
         // Verify "Old Task" is deleted, others remain
-        val tasks = taskDao.getAllTasks().getOrAwaitValue()
-        assertEquals(2, tasks.size)
-        assertEquals(false, tasks.any { it.title == "Old Task" })
-        assertEquals(true, tasks.any { it.title == "Recent Task" })
-        assertEquals(true, tasks.any { it.title == "Active Task" })
+        // LiveData must be observed on the main thread
+        withContext(Dispatchers.Main) {
+            val tasks = taskDao.getAllTasks().getOrAwaitValue()
+            assertEquals(2, tasks.size)
+            assertEquals(false, tasks.any { it.title == "Old Task" })
+            assertEquals(true, tasks.any { it.title == "Recent Task" })
+            assertEquals(true, tasks.any { it.title == "Active Task" })
+        }
     }
 
     @Test
@@ -151,8 +170,11 @@ class CleanupWorkerTest {
         assertEquals(ListenableWorker.Result.success(), result)
 
         // Verify task is NOT deleted
-        val tasks = taskDao.getAllTasks().getOrAwaitValue()
-        assertEquals(1, tasks.size)
-        assertEquals(true, tasks.any { it.title == "Old Task" })
+        // LiveData must be observed on the main thread
+        withContext(Dispatchers.Main) {
+            val tasks = taskDao.getAllTasks().getOrAwaitValue()
+            assertEquals(1, tasks.size)
+            assertEquals(true, tasks.any { it.title == "Old Task" })
+        }
     }
 }

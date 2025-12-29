@@ -8,14 +8,22 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.lifecycle.ViewModelProvider
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class ClearDataTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
     private lateinit var device: UiDevice
     private lateinit var scenario: ActivityScenario<MainActivity>
@@ -24,6 +32,7 @@ class ClearDataTest {
 
     @Before
     fun setUp() {
+        hiltRule.inject()
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         
         // Ensure clean slate
@@ -32,6 +41,10 @@ class ClearDataTest {
         sharedPrefs.edit().clear().apply()
 
         scenario = ActivityScenario.launch(MainActivity::class.java)
+        scenario.onActivity {
+            val taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
+            taskViewModel.deleteAll()
+        }
     }
 
     @After
@@ -49,20 +62,16 @@ class ClearDataTest {
 
         // 2. Navigate to Settings
         // Assuming "Settings" is in the overflow menu
-        val openMenuDesc = "More options" // Standard content description for overflow
-        val menuButton = device.findObject(By.desc(openMenuDesc))
+        // UiAutomator can find the overflow menu by description "More options" usually
+        val menuButton = device.wait(Until.findObject(By.desc("More options")), LAUNCH_TIMEOUT)
+        // If not found, try openOptionsMenu manually or use key event
         if (menuButton != null) {
             menuButton.click()
-            device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
         } else {
-             // If no overflow menu button found by description, maybe it's ID based or different on this device/emulator config?
-             // Let's try finding by ID if we knew it, or assume standard ActionBar behavior.
-             // Alternatively, try pressing the menu key if it exists, or look for the text "Settings" if it's exposed.
-             // Given MainActivity.kt has onCreateOptionsMenu, it's likely in the overflow.
-             // Let's try finding object with className "androidx.appcompat.widget.ActionMenuPresenter$OverflowMenuButton" if description fails,
-             // or just look for the text if the menu is already open (unlikely).
-             // However, UiAutomator is usually good with "More options".
+            device.pressMenu()
         }
+        
+        device.wait(Until.findObject(By.text("Settings")), LAUNCH_TIMEOUT).click()
         
         // Wait for Settings Activity
         device.wait(Until.hasObject(By.text("Data Management")), LAUNCH_TIMEOUT)

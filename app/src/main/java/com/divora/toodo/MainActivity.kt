@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.viewpager2.widget.ViewPager2
 import com.divora.toodo.databinding.ActivityMainBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -114,6 +115,25 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+
+        val searchItem = menu.findItem(R.id.action_search)
+        val searchView = searchItem.actionView as SearchView
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                taskViewModel.setSearchQuery(newText ?: "")
+                return true
+            }
+        })
+
+        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val savedSort = sharedPreferences.getString("sort_order", "PRIORITY")
+        taskViewModel.setSortOrder(SortOrder.valueOf(savedSort ?: "PRIORITY"))
+
         return true
     }
 
@@ -124,7 +144,29 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
                 true
             }
+            R.id.sort_priority -> {
+                saveSortOrder(SortOrder.PRIORITY)
+                true
+            }
+            R.id.sort_points -> {
+                saveSortOrder(SortOrder.POINTS)
+                true
+            }
+            R.id.sort_az -> {
+                saveSortOrder(SortOrder.AZ)
+                true
+            }
+            R.id.sort_newest -> {
+                saveSortOrder(SortOrder.NEWEST)
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun saveSortOrder(sortOrder: SortOrder) {
+        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("sort_order", sortOrder.name).apply()
+        taskViewModel.setSortOrder(sortOrder)
     }
 }

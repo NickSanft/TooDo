@@ -71,7 +71,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
         filterSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 currentCategoryFilter = filterCategories[position]
-                taskViewModel.allTasks.value?.let { tasks ->
+                taskViewModel.filteredTasks.value?.let { tasks ->
                     updateTaskList(tasks, isCompleted, currentCategoryFilter, recyclerView, emptyListTextView, adapter)
                 }
             }
@@ -79,7 +79,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        taskViewModel.allTasks.observe(viewLifecycleOwner) { tasks ->
+        taskViewModel.filteredTasks.observe(viewLifecycleOwner) { tasks ->
             tasks?.let {
                 updateTaskList(it, isCompleted, currentCategoryFilter, recyclerView, emptyListTextView, adapter)
             }
@@ -134,11 +134,8 @@ class TaskListFragment : Fragment(), FabClickHandler {
         } else {
             recyclerView.isVisible = true
             emptyListTextView.isVisible = false
-            if (isCompleted) {
-                adapter.submitList(filteredTasks.sortedByDescending { it.completedAt })
-            } else {
-                adapter.submitList(filteredTasks.sortedBy { it.priority })
-            }
+            // Sorting is now handled in the ViewModel
+            adapter.submitList(filteredTasks)
         }
     }
 

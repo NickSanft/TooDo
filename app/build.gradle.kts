@@ -16,8 +16,8 @@ android {
         versionCode = 4
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArgument("disable-animations", "true")
+        testInstrumentationRunner = "com.divora.toodo.CustomTestRunner"
+        testInstrumentationRunnerArguments += mapOf("disable-animations" to "true")
     }
 
     buildTypes {
@@ -66,6 +66,8 @@ dependencies {
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    androidTestImplementation(libs.hilt.testing)
+    kaptAndroidTest(libs.hilt.android.compiler)
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation("androidx.hilt:hilt-work:1.2.0")

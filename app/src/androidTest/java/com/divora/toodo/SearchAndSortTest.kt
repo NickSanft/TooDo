@@ -9,13 +9,20 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SearchAndSortTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
     private lateinit var device: UiDevice
     private lateinit var scenario: ActivityScenario<MainActivity>
@@ -24,6 +31,7 @@ class SearchAndSortTest {
 
     @Before
     fun setUp() {
+        hiltRule.inject()
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit().clear().apply()
@@ -46,8 +54,26 @@ class SearchAndSortTest {
         createTask("Banana", "Easy", 1)
         createTask("Cherry", "Easy", 1)
 
-        device.wait(Until.findObject(By.res(packageName, "action_search")), LAUNCH_TIMEOUT).click()
-        val searchBox = device.wait(Until.findObject(By.clazz("android.widget.EditText")), LAUNCH_TIMEOUT)
+        // Click on the search icon
+        val searchIcon = device.wait(Until.findObject(By.res(packageName, "action_search")), LAUNCH_TIMEOUT)
+        if (searchIcon == null) {
+            throw AssertionError("Search icon not found")
+        }
+        searchIcon.click()
+
+        // Wait for the search box (EditText) to appear. 
+        // Using resource ID is more reliable for SearchView's internal EditText.
+        // It is usually "search_src_text".
+        var searchBox = device.wait(Until.findObject(By.res("com.divora.toodo:id/search_src_text")), LAUNCH_TIMEOUT)
+        
+        // Fallback to searching by class if ID lookup fails (sometimes package name might vary for internal resources)
+        if (searchBox == null) {
+             searchBox = device.wait(Until.findObject(By.clazz("android.widget.EditText")), LAUNCH_TIMEOUT)
+        }
+
+        if (searchBox == null) {
+            throw AssertionError("Search box not found after clicking search icon")
+        }
         
         searchBox.text = "Ban"
         device.waitForIdle()
@@ -66,7 +92,9 @@ class SearchAndSortTest {
     
     // Helper to create task
     private fun createTask(title: String, difficulty: String, points: Int) {
-        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        val fab = device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT)
+        fab.click()
+        
         device.wait(Until.hasObject(By.text("Add New Task")), LAUNCH_TIMEOUT)
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = title
         

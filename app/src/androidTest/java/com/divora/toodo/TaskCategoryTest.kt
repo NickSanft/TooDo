@@ -9,15 +9,22 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class TaskCategoryTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
     private lateinit var device: UiDevice
     private lateinit var scenario: ActivityScenario<MainActivity>
@@ -26,6 +33,7 @@ class TaskCategoryTest {
 
     @Before
     fun setUp() {
+        hiltRule.inject()
         // Initialize UiDevice instance
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
@@ -58,30 +66,43 @@ class TaskCategoryTest {
         createTask("Health Task", "Health")
 
         // Verify all tasks are shown initially (assuming 'All' is default)
-        var taskTitles = device.wait(Until.findObjects(By.res(packageName, "task_title")), LAUNCH_TIMEOUT)
-            .map { it.text }
+        var taskObjects = device.wait(Until.findObjects(By.res(packageName, "task_title")), LAUNCH_TIMEOUT)
+        var taskTitles = taskObjects.map { it.text }
         assertTrue(taskTitles.contains("Work Task"))
         assertTrue(taskTitles.contains("Personal Task"))
         assertTrue(taskTitles.contains("Health Task"))
 
         // Filter by "Work"
         selectCategoryFilter("Work")
-        taskTitles = device.wait(Until.findObjects(By.res(packageName, "task_title")), LAUNCH_TIMEOUT)
-            .map { it.text }
+        taskObjects = device.wait(Until.findObjects(By.res(packageName, "task_title")), LAUNCH_TIMEOUT)
+        taskTitles = taskObjects.map { it.text }
+        
+        // We expect only 1, but we should make sure we're not seeing stale objects.
+        // Wait for update.
+        device.waitForIdle()
+
+        // Re-query
+        taskObjects = device.findObjects(By.res(packageName, "task_title"))
+        taskTitles = taskObjects.map { it.text }
+        
         assertEquals(1, taskTitles.size)
         assertTrue(taskTitles.contains("Work Task"))
 
         // Filter by "Personal"
         selectCategoryFilter("Personal")
-        taskTitles = device.wait(Until.findObjects(By.res(packageName, "task_title")), LAUNCH_TIMEOUT)
-            .map { it.text }
+        device.waitForIdle()
+        taskObjects = device.findObjects(By.res(packageName, "task_title"))
+        taskTitles = taskObjects.map { it.text }
+        
         assertEquals(1, taskTitles.size)
         assertTrue(taskTitles.contains("Personal Task"))
 
         // Filter by "All"
         selectCategoryFilter("All")
-        taskTitles = device.wait(Until.findObjects(By.res(packageName, "task_title")), LAUNCH_TIMEOUT)
-            .map { it.text }
+        device.waitForIdle()
+        taskObjects = device.findObjects(By.res(packageName, "task_title"))
+        taskTitles = taskObjects.map { it.text }
+        
         assertEquals(3, taskTitles.size)
     }
 

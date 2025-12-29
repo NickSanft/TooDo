@@ -6,7 +6,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
-import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -130,7 +129,14 @@ class PrizesTest {
 
         // Swipe left to delete
         val prizeToDelete = device.wait(Until.findObject(By.text("Custom Prize")), LAUNCH_TIMEOUT)
-        prizeToDelete.swipe(Direction.LEFT, 1.0f)
+        
+        // Use coordinate based swipe which is often more reliable for ItemTouchHelper than Direction.LEFT
+        val rect = prizeToDelete.visibleBounds
+        val startX = rect.right - 20
+        val endX = rect.left + 20
+        val centerY = rect.centerY()
+        device.swipe(startX, centerY, endX, centerY, 15)
+        
         device.waitForIdle()
 
         // Verify the prize is removed from the list
@@ -155,6 +161,12 @@ class PrizesTest {
         device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
         device.wait(Until.hasObject(By.res(packageName, "prizes_list")), LAUNCH_TIMEOUT)
         device.waitForIdle()
+
+        // Add "Ice Cream" prize explicitly as DB is cleared
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "prize_name_input")), LAUNCH_TIMEOUT).text = "Ice Cream"
+        device.wait(Until.findObject(By.res(packageName, "prize_cost_input")), LAUNCH_TIMEOUT).text = "10"
+        device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
 
         // Redeem the "Ice Cream" prize
         device.wait(Until.findObject(By.desc("Redeem prize: Ice Cream")), LAUNCH_TIMEOUT).click()
@@ -182,6 +194,12 @@ class PrizesTest {
     fun testRedeemPrize_notEnoughPoints() {
         // Switch to the "Prizes" tab
         device.wait(Until.findObject(By.text("Prizes")), LAUNCH_TIMEOUT).click()
+
+        // Add a prize
+        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        device.wait(Until.findObject(By.res(packageName, "prize_name_input")), LAUNCH_TIMEOUT).text = "Ice Cream"
+        device.wait(Until.findObject(By.res(packageName, "prize_cost_input")), LAUNCH_TIMEOUT).text = "10"
+        device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
 
         // Attempt to redeem the "Ice Cream" prize (costs 10 points)
         device.wait(Until.findObject(By.desc("Redeem prize: Ice Cream")), LAUNCH_TIMEOUT).click()

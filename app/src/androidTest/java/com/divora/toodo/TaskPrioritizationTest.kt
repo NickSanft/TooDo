@@ -2,20 +2,27 @@ package com.divora.toodo
 
 import android.content.Context
 import androidx.lifecycle.ViewModelProvider
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import androidx.test.core.app.ActivityScenario
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class TaskPrioritizationTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
     private lateinit var device: UiDevice
     private lateinit var scenario: ActivityScenario<MainActivity>
@@ -24,6 +31,7 @@ class TaskPrioritizationTest {
 
     @Before
     fun setUp() {
+        hiltRule.inject()
         // Initialize UiDevice instance
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
@@ -54,14 +62,33 @@ class TaskPrioritizationTest {
         createTask("Low Priority Task", 3)
         createTask("High Priority Task", 1)
         createTask("Medium Priority Task", 2)
+        
+        // Wait for list to update and stabilize
+        device.waitForIdle()
 
         // Verify that the tasks are displayed in the correct order
-        val taskTitles = device.wait(Until.findObjects(By.res(packageName, "task_title")), LAUNCH_TIMEOUT)
-            .map { it.text }
+        // Note: findObjects doesn't guarantee order matching the UI layout order strictly in all cases,
+        // but typically for RecyclerView it returns in order of children.
+        val taskObjects = device.wait(Until.findObjects(By.res(packageName, "task_title")), LAUNCH_TIMEOUT)
+        
+        // Ensure we found all 3
+        if (taskObjects.size < 3) {
+            // Wait a bit more or fail
+            Thread.sleep(1000)
+        }
+        
+        val taskTitles = device.findObjects(By.res(packageName, "task_title")).map { it.text }
 
-        assert(taskTitles[0] == "High Priority Task")
-        assert(taskTitles[1] == "Medium Priority Task")
-        assert(taskTitles[2] == "Low Priority Task")
+        // Depending on sorting implementation, we expect High -> Medium -> Low
+        // Assuming default sort is by priority.
+        
+        if (taskTitles.size >= 3) {
+            assert(taskTitles[0] == "High Priority Task")
+            assert(taskTitles[1] == "Medium Priority Task")
+            assert(taskTitles[2] == "Low Priority Task")
+        } else {
+             throw AssertionError("Not all tasks displayed. Found: $taskTitles")
+        }
     }
 
     private fun createTask(title: String, priority: Int) {

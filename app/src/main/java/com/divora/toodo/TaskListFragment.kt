@@ -1,5 +1,6 @@
 package com.divora.toodo
 
+import android.animation.LayoutTransition
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -37,6 +38,10 @@ class TaskListFragment : Fragment(), FabClickHandler {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Fix for crash when using animateLayoutChanges="true" with ViewPager2
+        val rootLayout = view.findViewById<ViewGroup>(R.id.task_list_root)
+        rootLayout.layoutTransition?.setAnimateParentHierarchy(false)
 
         val isCompleted = arguments?.getBoolean("isCompleted") ?: false
 

@@ -51,6 +51,10 @@ class PrizesFragment : Fragment(), FabClickHandler {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Fix for crash when using animateLayoutChanges="true" with ViewPager2
+        binding.prizesRoot.layoutTransition?.setAnimateParentHierarchy(false)
+        binding.prizesContainer.layoutTransition?.setAnimateParentHierarchy(false)
+
         adapter = PrizesAdapter(
             onRedeemClicked = { prize -> showRedeemConfirmationDialog(prize) },
             onEditClicked = { prize -> showEditPrizeDialog(prize) }

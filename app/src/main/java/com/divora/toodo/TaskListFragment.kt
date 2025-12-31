@@ -139,8 +139,12 @@ class TaskListFragment : Fragment(), FabClickHandler {
         } else {
             recyclerView.isVisible = true
             emptyListTextView.isVisible = false
-            // Sorting is now handled in the ViewModel
-            adapter.submitList(filteredTasks)
+            val sortedTasks = if (isCompleted) {
+                filteredTasks.sortedByDescending { it.completedAt }
+            } else {
+                filteredTasks
+            }
+            adapter.submitList(sortedTasks)
         }
     }
 

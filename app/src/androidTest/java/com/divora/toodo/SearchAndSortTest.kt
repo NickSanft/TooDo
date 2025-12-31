@@ -76,18 +76,16 @@ class SearchAndSortTest {
         }
         
         searchBox.text = "Ban"
-        device.waitForIdle()
-
-        assert(device.hasObject(By.text("Banana")))
-        assert(!device.hasObject(By.text("Apple")))
-        assert(!device.hasObject(By.text("Cherry")))
+        
+        assert(device.wait(Until.hasObject(By.text("Banana")), LAUNCH_TIMEOUT))
+        assert(device.wait(Until.gone(By.text("Apple")), LAUNCH_TIMEOUT))
+        assert(device.wait(Until.gone(By.text("Cherry")), LAUNCH_TIMEOUT))
 
         searchBox.text = "Ch"
-        device.waitForIdle()
         
-        assert(device.hasObject(By.text("Cherry")))
-        assert(!device.hasObject(By.text("Apple")))
-        assert(!device.hasObject(By.text("Banana")))
+        assert(device.wait(Until.hasObject(By.text("Cherry")), LAUNCH_TIMEOUT))
+        assert(device.wait(Until.gone(By.text("Apple")), LAUNCH_TIMEOUT))
+        assert(device.wait(Until.gone(By.text("Banana")), LAUNCH_TIMEOUT))
     }
     
     // Helper to create task

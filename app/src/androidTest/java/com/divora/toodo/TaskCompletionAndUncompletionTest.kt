@@ -59,7 +59,12 @@ class TaskCompletionAndUncompletionTest {
     @Test
     fun testTaskCompletionAndUncompletion() {
         // Create and complete a task
-        device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT).click()
+        val fab = device.wait(Until.findObject(By.res(packageName, "fab")), LAUNCH_TIMEOUT)
+        fab?.click() ?: run {
+             // Retry finding FAB
+             device.waitForIdle()
+             device.findObject(By.res(packageName, "fab")).click()
+        }
         
         device.wait(Until.hasObject(By.text("Add New Task")), LAUNCH_TIMEOUT)
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = "Complete me"
@@ -67,7 +72,13 @@ class TaskCompletionAndUncompletionTest {
         device.wait(Until.findObject(By.text("Add")), LAUNCH_TIMEOUT).click()
         device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
 
-        device.wait(Until.findObject(By.desc("Complete task: Complete me")), LAUNCH_TIMEOUT).click()
+        val activeCheckbox = device.wait(Until.findObject(By.desc("Complete task: Complete me")), LAUNCH_TIMEOUT)
+        if (activeCheckbox == null) {
+            // Wait for list update
+             device.waitForIdle()
+        }
+        device.findObject(By.desc("Complete task: Complete me")).click()
+        
         device.wait(Until.gone(By.text("Complete me")), LAUNCH_TIMEOUT)
         device.wait(Until.findObject(By.text("Completed")), LAUNCH_TIMEOUT).click()
         device.wait(Until.hasObject(By.text("Complete me")), LAUNCH_TIMEOUT)

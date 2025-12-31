@@ -13,5 +13,6 @@ data class Task(
     val priority: Int = 2, // 1 = High, 2 = Medium, 3 = Low
     val category: String = "General",
     val isCompleted: Boolean = false,
-    val completedAt: Long? = null
+    val completedAt: Long? = null,
+    val orderIndex: Int = 0
 )

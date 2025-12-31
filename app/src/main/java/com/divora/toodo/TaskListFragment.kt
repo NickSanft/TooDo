@@ -21,12 +21,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Collections
 
 @AndroidEntryPoint
 class TaskListFragment : Fragment(), FabClickHandler {
 
     private val taskViewModel: TaskViewModel by activityViewModels()
     private val categories = listOf("General", "Work", "Personal", "Health", "Study", "Finance")
+    private lateinit var adapter: TaskListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,15 +47,18 @@ class TaskListFragment : Fragment(), FabClickHandler {
 
         val isCompleted = arguments?.getBoolean("isCompleted") ?: false
 
-        val adapter = TaskListAdapter(
-            { task, isChecked ->
+        adapter = TaskListAdapter(
+            onCheckBoxClicked = { task, isChecked ->
                 if (isChecked) {
                     taskViewModel.update(task.copy(isCompleted = true))
                 } else {
                     (activity as MainActivity).showUncheckConfirmationDialog(task)
                 }
             },
-            { task -> showEditTaskDialog(task) }
+            onTaskClicked = { task -> showEditTaskDialog(task) },
+            onTaskMoved = { fromPosition, toPosition ->
+                // This callback is called during the drag.
+            }
         )
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.task_list)
@@ -63,7 +68,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        setupSwipeToDelete(recyclerView)
+        setupSwipeToDeleteAndDrag(recyclerView)
 
         // Set up filter spinner
         val filterCategories = listOf("All") + categories
@@ -77,7 +82,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 currentCategoryFilter = filterCategories[position]
                 taskViewModel.filteredTasks.value?.let { tasks ->
-                    updateTaskList(tasks, isCompleted, currentCategoryFilter, recyclerView, emptyListTextView, adapter)
+                    updateTaskList(tasks, isCompleted, currentCategoryFilter, recyclerView, emptyListTextView)
                 }
             }
 
@@ -86,7 +91,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
 
         taskViewModel.filteredTasks.observe(viewLifecycleOwner) { tasks ->
             tasks?.let {
-                updateTaskList(it, isCompleted, currentCategoryFilter, recyclerView, emptyListTextView, adapter)
+                updateTaskList(it, isCompleted, currentCategoryFilter, recyclerView, emptyListTextView)
             }
         }
 
@@ -95,15 +100,36 @@ class TaskListFragment : Fragment(), FabClickHandler {
         }
     }
 
-    private fun setupSwipeToDelete(recyclerView: RecyclerView) {
-        val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+    private fun setupSwipeToDeleteAndDrag(recyclerView: RecyclerView) {
+        val swipeHandler = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                return false
+                val fromPosition = viewHolder.adapterPosition
+                val toPosition = target.adapterPosition
+                
+                adapter.onItemMove(fromPosition, toPosition)
+                
+                val currentList = adapter.currentList.toMutableList()
+                Collections.swap(currentList, fromPosition, toPosition)
+                adapter.submitList(currentList)
+                
+                return true
+            }
+            
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                val tasks = adapter.currentList
+                tasks.forEachIndexed { index, task ->
+                    if (task.orderIndex != index) {
+                        taskViewModel.update(task.copy(orderIndex = index))
+                    }
+                }
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                val adapter = recyclerView.adapter as TaskListAdapter
                 val task = adapter.currentList[position]
 
                 taskViewModel.delete(task)
@@ -124,8 +150,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
         isCompleted: Boolean,
         categoryFilter: String,
         recyclerView: RecyclerView,
-        emptyListTextView: TextView,
-        adapter: TaskListAdapter
+        emptyListTextView: TextView
     ) {
         val filteredTasks = tasks.filter {
             it.isCompleted == isCompleted && (categoryFilter == "All" || it.category == categoryFilter)
@@ -142,7 +167,8 @@ class TaskListFragment : Fragment(), FabClickHandler {
             val sortedTasks = if (isCompleted) {
                 filteredTasks.sortedByDescending { it.completedAt }
             } else {
-                filteredTasks
+                // Sort by orderIndex for active tasks to respect drag-and-drop
+                filteredTasks.sortedBy { it.orderIndex }
             }
             adapter.submitList(sortedTasks)
         }
@@ -210,7 +236,10 @@ class TaskListFragment : Fragment(), FabClickHandler {
                         else -> 3
                     }
                     val category = categorySpinner.selectedItem.toString()
-                    taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points, priority = priority, category = category))
+                    
+                    val newOrderIndex = (adapter.currentList.maxOfOrNull { it.orderIndex } ?: 0) + 1
+                    
+                    taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points, priority = priority, category = category, orderIndex = newOrderIndex))
                     dialog.dismiss()
                 }
             }

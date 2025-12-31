@@ -57,9 +57,13 @@ class SearchAndSortTest {
         // Click on the search icon
         val searchIcon = device.wait(Until.findObject(By.res(packageName, "action_search")), LAUNCH_TIMEOUT)
         if (searchIcon == null) {
-            throw AssertionError("Search icon not found")
+            // Sometimes it might be hidden in overflow? Or ID is different?
+            // Try by desc
+            val searchDesc = device.wait(Until.findObject(By.desc("Search")), LAUNCH_TIMEOUT)
+            searchDesc?.click() ?: throw AssertionError("Search icon not found")
+        } else {
+            searchIcon.click()
         }
-        searchIcon.click()
 
         // Wait for the search box (EditText) to appear. 
         // Using resource ID is more reliable for SearchView's internal EditText.
@@ -72,7 +76,8 @@ class SearchAndSortTest {
         }
 
         if (searchBox == null) {
-            throw AssertionError("Search box not found after clicking search icon")
+            // It might be that the action view didn't expand.
+             throw AssertionError("Search box not found after clicking search icon")
         }
         
         searchBox.text = "Ban"

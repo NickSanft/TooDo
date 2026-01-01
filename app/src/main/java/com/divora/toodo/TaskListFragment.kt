@@ -22,6 +22,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Collections
+import nl.dionsegijn.konfetti.xml.KonfettiView
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class TaskListFragment : Fragment(), FabClickHandler {
@@ -51,6 +56,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
             onCheckBoxClicked = { task, isChecked ->
                 if (isChecked) {
                     taskViewModel.update(task.copy(isCompleted = true))
+                    playKonfetti()
                 } else {
                     (activity as MainActivity).showUncheckConfirmationDialog(task)
                 }
@@ -98,6 +104,20 @@ class TaskListFragment : Fragment(), FabClickHandler {
         taskViewModel.totalPoints.observe(viewLifecycleOwner) {
             points -> view.findViewById<TextView>(R.id.total_points_text).text = "Total Points: ${points ?: 0}"
         }
+    }
+
+    private fun playKonfetti() {
+        val konfettiView = view?.findViewById<KonfettiView>(R.id.konfettiView)
+        val party = Party(
+            speed = 0f,
+            maxSpeed = 30f,
+            damping = 0.9f,
+            spread = 360,
+            colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+            emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100),
+            position = Position.Relative(0.5, 0.3)
+        )
+        konfettiView?.start(party)
     }
 
     private fun setupSwipeToDeleteAndDrag(recyclerView: RecyclerView) {

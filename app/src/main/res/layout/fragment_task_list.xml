@@ -17,6 +17,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
+        app:iconifiedByDefault="false"
+        app:queryHint="Search tasks..."
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/total_points_text" />
+
     <Spinner
         android:id="@+id/filter_spinner"
         android:layout_width="wrap_content"
@@ -24,7 +36,7 @@
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/total_points_text" />
+        app:layout_constraintTop_toBottomOf="@+id/search_view" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/task_list"

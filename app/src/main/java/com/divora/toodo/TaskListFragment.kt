@@ -13,6 +13,7 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -70,6 +71,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
         val recyclerView = view.findViewById<RecyclerView>(R.id.task_list)
         val emptyListTextView = view.findViewById<TextView>(R.id.empty_list_text)
         val filterSpinner = view.findViewById<Spinner>(R.id.filter_spinner)
+        val searchView = view.findViewById<SearchView>(R.id.search_view)
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -94,6 +96,18 @@ class TaskListFragment : Fragment(), FabClickHandler {
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
+        
+        // Set up Search View
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                taskViewModel.setSearchQuery(newText ?: "")
+                return true
+            }
+        })
 
         taskViewModel.filteredTasks.observe(viewLifecycleOwner) { tasks ->
             tasks?.let {

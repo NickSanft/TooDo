@@ -60,12 +60,15 @@ class TaskListFragment : Fragment(), FabClickHandler {
         val isCompleted = arguments?.getBoolean("isCompleted") ?: false
 
         adapter = TaskListAdapter(
-            onCheckBoxClicked = { task, isChecked ->
+            onCheckBoxClicked = { task, isChecked, position ->
                 if (isChecked) {
                     taskViewModel.update(task.copy(isCompleted = true))
                     playKonfetti()
                 } else {
-                    (activity as MainActivity).showUncheckConfirmationDialog(task)
+                    (activity as MainActivity).showUncheckConfirmationDialog(task) {
+                        // User cancelled, revert the checkbox visually
+                        adapter.notifyItemChanged(position)
+                    }
                 }
             },
             onTaskClicked = { task -> showTaskDetailsDialog(task) },

@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    fun showUncheckConfirmationDialog(task: Task) {
+    fun showUncheckConfirmationDialog(task: Task, onCancel: () -> Unit) {
         val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
         if (sharedPreferences.getBoolean("disable_confirmations", false)) {
             taskViewModel.update(task.copy(isCompleted = false))
@@ -95,7 +95,12 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Uncheck") { _, _ ->
                 taskViewModel.update(task.copy(isCompleted = false))
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("Cancel") { _, _ ->
+                onCancel()
+            }
+            .setOnCancelListener {
+                onCancel()
+            }
             .show()
     }
 

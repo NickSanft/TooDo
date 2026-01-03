@@ -14,7 +14,7 @@ import java.util.Collections
 import java.util.Locale
 
 class TaskListAdapter(
-    private val onCheckBoxClicked: (Task, Boolean) -> Unit,
+    private val onCheckBoxClicked: (Task, Boolean, Int) -> Unit,
     private val onTaskClicked: (Task) -> Unit,
     private val onTaskMoved: ((Int, Int) -> Unit)? = null
 ) : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TaskDiffCallback()) {
@@ -39,6 +39,9 @@ class TaskListAdapter(
         fun bind(task: Task) {
             binding.taskTitle.text = task.title
             binding.taskPoints.text = "${task.points} pts"
+            
+            // Remove the listener temporarily to avoid triggering it when setting the state programmatically
+            binding.checkBox.setOnCheckedChangeListener(null)
             binding.checkBox.isChecked = task.isCompleted
             
             // Set content description for testing
@@ -83,8 +86,9 @@ class TaskListAdapter(
                 binding.taskDueDate.isVisible = false
             }
 
+            // Set the listener with the current adapter position
             binding.checkBox.setOnClickListener {
-                onCheckBoxClicked(task, binding.checkBox.isChecked)
+                onCheckBoxClicked(task, binding.checkBox.isChecked, layoutPosition)
             }
 
             binding.root.setOnClickListener {

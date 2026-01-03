@@ -14,5 +14,6 @@ data class Task(
     val category: String = "General",
     val isCompleted: Boolean = false,
     val completedAt: Long? = null,
-    val orderIndex: Int = 0
+    val orderIndex: Int = 0,
+    val dueDate: Long? = null
 )

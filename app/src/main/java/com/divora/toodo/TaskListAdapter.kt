@@ -4,11 +4,14 @@ import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.divora.toodo.databinding.ListItemTaskBinding
+import java.text.SimpleDateFormat
 import java.util.Collections
+import java.util.Locale
 
 class TaskListAdapter(
     private val onCheckBoxClicked: (Task, Boolean) -> Unit,
@@ -64,6 +67,21 @@ class TaskListAdapter(
             binding.taskPriority.setTextColor(ContextCompat.getColor(binding.root.context, priorityColor))
             
             binding.taskCategory.text = task.category
+            
+            if (task.dueDate != null) {
+                binding.taskDueDate.isVisible = true
+                val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                binding.taskDueDate.text = "Due: ${dateFormat.format(task.dueDate)}"
+                
+                // Highlight overdue tasks (if not completed)
+                if (!task.isCompleted && task.dueDate < System.currentTimeMillis()) {
+                    binding.taskDueDate.setTextColor(ContextCompat.getColor(binding.root.context, R.color.priority_high))
+                } else {
+                     binding.taskDueDate.setTextColor(ContextCompat.getColor(binding.root.context, android.R.color.darker_gray))
+                }
+            } else {
+                binding.taskDueDate.isVisible = false
+            }
 
             binding.checkBox.setOnClickListener {
                 onCheckBoxClicked(task, binding.checkBox.isChecked)

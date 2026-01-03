@@ -20,6 +20,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.room.Room
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
@@ -33,11 +35,14 @@ class AnimationTest {
 
     @Before
     fun setUp() {
+        // Ensure database is cleared/migrated correctly by deleting it before tests
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.deleteDatabase("task_database")
+
         hiltRule.inject()
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
         // Reset
-        val context = ApplicationProvider.getApplicationContext<Context>()
         val sharedPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         sharedPrefs.edit().clear().apply()
 

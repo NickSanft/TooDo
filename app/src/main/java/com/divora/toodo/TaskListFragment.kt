@@ -1,6 +1,7 @@
 package com.divora.toodo
 
 import android.animation.LayoutTransition
+import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Spinner
@@ -22,7 +24,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Calendar
 import java.util.Collections
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
 import nl.dionsegijn.konfetti.xml.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -222,6 +228,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
         val priorityRadioGroup = dialogView.findViewById<RadioGroup>(R.id.priority_radio_group)
         val categorySpinner = dialogView.findViewById<Spinner>(R.id.category_spinner)
         val difficultyRadioGroup = dialogView.findViewById<RadioGroup>(R.id.difficulty_radio_group)
+        val dueDateButton = dialogView.findViewById<Button>(R.id.due_date_button)
 
         val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -238,6 +245,25 @@ class TaskListFragment : Fragment(), FabClickHandler {
             "Easy" -> difficultyRadioGroup.check(R.id.easy_button)
             "Medium" -> difficultyRadioGroup.check(R.id.medium_button)
             "Hard" -> difficultyRadioGroup.check(R.id.hard_button)
+        }
+        
+        var selectedDueDate: Long? = null
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        
+        dueDateButton.setOnClickListener {
+            val datePickerDialog = DatePickerDialog(
+                requireContext(),
+                { _, year, month, dayOfMonth ->
+                    calendar.set(year, month, dayOfMonth)
+                    selectedDueDate = calendar.timeInMillis
+                    dueDateButton.text = dateFormat.format(calendar.time)
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
+            datePickerDialog.show()
         }
 
         val dialog = AlertDialog.Builder(requireContext())
@@ -273,7 +299,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
                     
                     val newOrderIndex = (adapter.currentList.maxOfOrNull { it.orderIndex } ?: 0) + 1
                     
-                    taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points, priority = priority, category = category, orderIndex = newOrderIndex))
+                    taskViewModel.insert(Task(title = title, difficulty = difficulty, points = points, priority = priority, category = category, orderIndex = newOrderIndex, dueDate = selectedDueDate))
                     dialog.dismiss()
                 }
             }
@@ -287,6 +313,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
         val difficultyRadioGroup = dialogView.findViewById<RadioGroup>(R.id.difficulty_radio_group)
         val priorityRadioGroup = dialogView.findViewById<RadioGroup>(R.id.priority_radio_group)
         val categorySpinner = dialogView.findViewById<Spinner>(R.id.category_spinner)
+        val dueDateButton = dialogView.findViewById<Button>(R.id.due_date_button)
 
         val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -303,6 +330,30 @@ class TaskListFragment : Fragment(), FabClickHandler {
             1 -> priorityRadioGroup.check(R.id.high_priority_button)
             2 -> priorityRadioGroup.check(R.id.medium_priority_button)
             3 -> priorityRadioGroup.check(R.id.low_priority_button)
+        }
+        
+        var selectedDueDate: Long? = task.dueDate
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        
+        if (selectedDueDate != null) {
+            calendar.timeInMillis = selectedDueDate!!
+            dueDateButton.text = dateFormat.format(calendar.time)
+        }
+        
+        dueDateButton.setOnClickListener {
+            val datePickerDialog = DatePickerDialog(
+                requireContext(),
+                { _, year, month, dayOfMonth ->
+                    calendar.set(year, month, dayOfMonth)
+                    selectedDueDate = calendar.timeInMillis
+                    dueDateButton.text = dateFormat.format(calendar.time)
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
+            datePickerDialog.show()
         }
 
         val dialog = AlertDialog.Builder(requireContext())
@@ -335,7 +386,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
                         else -> 3
                     }
                     val category = categorySpinner.selectedItem.toString()
-                    taskViewModel.update(task.copy(title = title, difficulty = difficulty, points = points, priority = priority, category = category))
+                    taskViewModel.update(task.copy(title = title, difficulty = difficulty, points = points, priority = priority, category = category, dueDate = selectedDueDate))
                     dialog.dismiss()
                 }
             }

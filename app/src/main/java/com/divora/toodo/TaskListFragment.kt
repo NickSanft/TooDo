@@ -68,7 +68,7 @@ class TaskListFragment : Fragment(), FabClickHandler {
                     (activity as MainActivity).showUncheckConfirmationDialog(task)
                 }
             },
-            onTaskClicked = { task -> showEditTaskDialog(task) },
+            onTaskClicked = { task -> showTaskDetailsDialog(task) },
             onTaskMoved = { fromPosition, toPosition ->
                 // This callback is called during the drag.
             }
@@ -305,6 +305,58 @@ class TaskListFragment : Fragment(), FabClickHandler {
             }
         }
         dialog.show()
+    }
+
+    private fun showTaskDetailsDialog(task: Task) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_view_task, null)
+        
+        val titleView = dialogView.findViewById<TextView>(R.id.view_task_title)
+        val statusView = dialogView.findViewById<TextView>(R.id.view_task_status)
+        val pointsView = dialogView.findViewById<TextView>(R.id.view_task_points)
+        val difficultyView = dialogView.findViewById<TextView>(R.id.view_task_difficulty)
+        val priorityView = dialogView.findViewById<TextView>(R.id.view_task_priority)
+        val categoryView = dialogView.findViewById<TextView>(R.id.view_task_category)
+        val dueDateView = dialogView.findViewById<TextView>(R.id.view_task_due_date)
+        val completedLabel = dialogView.findViewById<TextView>(R.id.view_task_completed_label)
+        val completedDateView = dialogView.findViewById<TextView>(R.id.view_task_completed_date)
+
+        titleView.text = task.title
+        statusView.text = if (task.isCompleted) "Completed" else "Active"
+        pointsView.text = "${task.points}"
+        difficultyView.text = task.difficulty
+        priorityView.text = when (task.priority) {
+            1 -> "High"
+            2 -> "Medium"
+            else -> "Low"
+        }
+        categoryView.text = task.category
+        
+        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        val timeFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+        
+        if (task.dueDate != null) {
+            dueDateView.text = dateFormat.format(Date(task.dueDate))
+        } else {
+            dueDateView.text = "None"
+        }
+
+        if (task.isCompleted && task.completedAt != null) {
+            completedLabel.visibility = View.VISIBLE
+            completedDateView.visibility = View.VISIBLE
+            completedDateView.text = timeFormat.format(Date(task.completedAt))
+        } else {
+            completedLabel.visibility = View.GONE
+            completedDateView.visibility = View.GONE
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Task Details")
+            .setView(dialogView)
+            .setPositiveButton("Edit") { _, _ ->
+                showEditTaskDialog(task)
+            }
+            .setNegativeButton("Close", null)
+            .show()
     }
 
     private fun showEditTaskDialog(task: Task) {

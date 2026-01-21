@@ -5,18 +5,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
-import androidx.test.espresso.action.ViewActions.typeText
+import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.hamcrest.CoreMatchers.allOf
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -37,7 +34,7 @@ class SearchTest {
     fun setUp() {
         hiltRule.inject()
         
-        // Reset
+        // Reset settings
         val context = ApplicationProvider.getApplicationContext<Context>()
         val sharedPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
         sharedPrefs.edit().clear().apply()
@@ -49,10 +46,13 @@ class SearchTest {
             val taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
             taskViewModel.deleteAll()
             
-            taskViewModel.insert(Task(title = "Buy Milk", difficulty = "Easy", points = 5))
-            taskViewModel.insert(Task(title = "Walk Dog", difficulty = "Medium", points = 10))
-            taskViewModel.insert(Task(title = "Read Book", difficulty = "Hard", points = 15))
+            taskViewModel.insert(Task(title = "Buy Milk", difficulty = "Easy", points = 1))
+            taskViewModel.insert(Task(title = "Walk Dog", difficulty = "Medium", points = 2))
+            taskViewModel.insert(Task(title = "Read Book", difficulty = "Hard", points = 5))
         }
+        
+        // Give time for database inserts and UI update
+        Thread.sleep(2000)
     }
 
     @After
@@ -62,42 +62,37 @@ class SearchTest {
 
     @Test
     fun testSearchFunctionality() {
-        // Wait for tasks to appear (basic wait, in a real app consider IdlingResource)
-        Thread.sleep(1000)
+        // 1. Verify initial state (Active tab)
+        onView(allOf(withText("Buy Milk"), isDisplayed())).check(matches(isDisplayed()))
+        onView(allOf(withText("Walk Dog"), isDisplayed())).check(matches(isDisplayed()))
 
-        // Verify all tasks are initially visible
-        onView(withText("Buy Milk")).check(matches(isDisplayed()))
-        onView(withText("Walk Dog")).check(matches(isDisplayed()))
-        onView(withText("Read Book")).check(matches(isDisplayed()))
+        // 2. Focus on search view in the Fragment layout
+        onView(allOf(withId(R.id.search_view), isDisplayed())).perform(click())
 
-        // Click on search view to expand it (if it's iconified, but here we set iconifiedByDefault=false, 
-        // however clicking it to focus is good practice)
-        onView(withId(R.id.search_view)).perform(click())
+        // 3. Type "Milk" into the SearchAutoComplete text view
+        onView(allOf(withId(androidx.appcompat.R.id.search_src_text), isDisplayed()))
+            .perform(replaceText("Milk"), closeSoftKeyboard())
 
-        // Type "Milk"
-        onView(withId(androidx.appcompat.R.id.search_src_text)).perform(typeText("Milk"), closeSoftKeyboard())
+        // 4. Wait for filter to apply (DiffUtil takes a moment)
+        Thread.sleep(1500)
 
-        // Wait for filter to apply
-        Thread.sleep(500)
-
-        // Verify "Buy Milk" is displayed
-        onView(withText("Buy Milk")).check(matches(isDisplayed()))
-
-        // Verify others are NOT displayed
+        // 5. Verify filtering results
+        onView(allOf(withText("Buy Milk"), isDisplayed())).check(matches(isDisplayed()))
+        
+        // If "Walk Dog" is filtered out of the RecyclerView, it is removed from the hierarchy.
+        // onView throws NoMatchingViewException if it's gone, so check(doesNotExist()) is required.
         onView(withText("Walk Dog")).check(doesNotExist())
         onView(withText("Read Book")).check(doesNotExist())
 
-        // Change query to "Walk"
-        // Note: We need to clear text first or just append. Let's clear and type.
-        onView(withId(androidx.appcompat.R.id.search_src_text)).perform(androidx.test.espresso.action.ViewActions.clearText(), typeText("Walk"), closeSoftKeyboard())
+        // 6. Change query to "Walk"
+        onView(allOf(withId(androidx.appcompat.R.id.search_src_text), isDisplayed()))
+            .perform(replaceText("Walk"), closeSoftKeyboard())
 
-        // Wait for filter to apply
-        Thread.sleep(500)
+        Thread.sleep(1500)
 
-        // Verify "Walk Dog" is displayed
-        onView(withText("Walk Dog")).check(matches(isDisplayed()))
+        // 7. Verify updated filter
+        onView(allOf(withText("Walk Dog"), isDisplayed())).check(matches(isDisplayed()))
         
-        // Verify others are NOT displayed
         onView(withText("Buy Milk")).check(doesNotExist())
     }
 }

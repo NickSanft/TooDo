@@ -45,6 +45,18 @@ object AppModule {
         }
     }
 
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE tasks ADD COLUMN orderIndex INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE tasks ADD COLUMN dueDate INTEGER")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -52,7 +64,15 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "task_database"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
+        ).addMigrations(
+            MIGRATION_1_2, 
+            MIGRATION_2_3, 
+            MIGRATION_3_4, 
+            MIGRATION_4_5, 
+            MIGRATION_5_6,
+            MIGRATION_6_7,
+            MIGRATION_7_8
+        ).build()
     }
 
     @Provides

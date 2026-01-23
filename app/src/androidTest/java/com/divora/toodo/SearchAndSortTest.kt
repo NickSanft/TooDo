@@ -41,6 +41,8 @@ class SearchAndSortTest {
             val taskViewModel = ViewModelProvider(it).get(TaskViewModel::class.java)
             taskViewModel.deleteAll()
         }
+        // Give time for delete to propagate
+        Thread.sleep(1000)
     }
 
     @After
@@ -54,43 +56,33 @@ class SearchAndSortTest {
         createTask("Banana", "Easy", 1)
         createTask("Cherry", "Easy", 1)
 
-        // Click on the search icon
-        val searchIcon = device.wait(Until.findObject(By.res(packageName, "action_search")), LAUNCH_TIMEOUT)
-        if (searchIcon == null) {
-            // Sometimes it might be hidden in overflow? Or ID is different?
-            // Try by desc
-            val searchDesc = device.wait(Until.findObject(By.desc("Search")), LAUNCH_TIMEOUT)
-            searchDesc?.click() ?: throw AssertionError("Search icon not found")
-        } else {
-            searchIcon.click()
-        }
+        // Verify initial visibility
+        assert(device.wait(Until.hasObject(By.text("Apple")), LAUNCH_TIMEOUT)) { "Apple not found initially" }
+        assert(device.wait(Until.hasObject(By.text("Banana")), LAUNCH_TIMEOUT)) { "Banana not found initially" }
+        assert(device.wait(Until.hasObject(By.text("Cherry")), LAUNCH_TIMEOUT)) { "Cherry not found initially" }
 
-        // Wait for the search box (EditText) to appear. 
-        // Using resource ID is more reliable for SearchView's internal EditText.
-        // It is usually "search_src_text".
-        var searchBox = device.wait(Until.findObject(By.res("com.divora.toodo:id/search_src_text")), LAUNCH_TIMEOUT)
-        
-        // Fallback to searching by class if ID lookup fails (sometimes package name might vary for internal resources)
-        if (searchBox == null) {
-             searchBox = device.wait(Until.findObject(By.clazz("android.widget.EditText")), LAUNCH_TIMEOUT)
-        }
+        // Find the search box in the fragment layout. 
+        // It's always visible because iconifiedByDefault="false"
+        val searchView = device.findObject(By.res(packageName, "search_view"))
+        val searchBox = searchView.findObject(By.res(packageName, "search_src_text")) ?: 
+                        device.findObject(By.res("com.divora.toodo:id/search_src_text"))
 
-        if (searchBox == null) {
-            // It might be that the action view didn't expand.
-             throw AssertionError("Search box not found after clicking search icon")
-        }
+        assert(searchBox != null) { "Search box not found in fragment layout" }
         
+        // Search for "Ban"
         searchBox.text = "Ban"
         
-        assert(device.wait(Until.hasObject(By.text("Banana")), LAUNCH_TIMEOUT))
-        assert(device.wait(Until.gone(By.text("Apple")), LAUNCH_TIMEOUT))
-        assert(device.wait(Until.gone(By.text("Cherry")), LAUNCH_TIMEOUT))
+        // Verify results
+        assert(device.wait(Until.hasObject(By.text("Banana")), LAUNCH_TIMEOUT)) { "Banana should be visible for query 'Ban'" }
+        assert(device.wait(Until.gone(By.text("Apple")), LAUNCH_TIMEOUT)) { "Apple should be filtered out for query 'Ban'" }
+        assert(device.wait(Until.gone(By.text("Cherry")), LAUNCH_TIMEOUT)) { "Cherry should be filtered out for query 'Ban'" }
 
+        // Search for "Ch"
         searchBox.text = "Ch"
         
-        assert(device.wait(Until.hasObject(By.text("Cherry")), LAUNCH_TIMEOUT))
-        assert(device.wait(Until.gone(By.text("Apple")), LAUNCH_TIMEOUT))
-        assert(device.wait(Until.gone(By.text("Banana")), LAUNCH_TIMEOUT))
+        assert(device.wait(Until.hasObject(By.text("Cherry")), LAUNCH_TIMEOUT)) { "Cherry should be visible for query 'Ch'" }
+        assert(device.wait(Until.gone(By.text("Apple")), LAUNCH_TIMEOUT)) { "Apple should be filtered out for query 'Ch'" }
+        assert(device.wait(Until.gone(By.text("Banana")), LAUNCH_TIMEOUT)) { "Banana should be filtered out for query 'Ch'" }
     }
     
     // Helper to create task
@@ -101,7 +93,6 @@ class SearchAndSortTest {
         device.wait(Until.hasObject(By.text("Add New Task")), LAUNCH_TIMEOUT)
         device.wait(Until.findObject(By.res(packageName, "task_title_input")), LAUNCH_TIMEOUT).text = title
         
-        // Default is Medium, so click Easy/Hard if needed
         if(difficulty == "Easy") {
             device.findObject(By.res(packageName, "easy_button")).click()
         } else if (difficulty == "Hard") {
@@ -110,5 +101,8 @@ class SearchAndSortTest {
 
         device.findObject(By.text("Add")).click()
         device.wait(Until.gone(By.text("Add New Task")), LAUNCH_TIMEOUT)
+        
+        // Small delay to ensure DB write is visible to LiveData
+        Thread.sleep(500)
     }
 }

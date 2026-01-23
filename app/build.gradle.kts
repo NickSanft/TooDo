@@ -10,6 +10,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        testInstrumentationRunnerArguments += mapOf("disable-animations" to "true")
         applicationId = "com.divora.toodo"
         minSdk = 24
         targetSdk = 35
@@ -17,7 +18,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "com.divora.toodo.CustomTestRunner"
-        testInstrumentationRunnerArguments += mapOf("disable-animations" to "true")
     }
 
     buildTypes {
